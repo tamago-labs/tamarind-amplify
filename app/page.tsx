@@ -5,8 +5,7 @@ import Hero from "@/components/landing/Hero";
 import ProductHighlights from "@/components/landing/ProductHighlights";
 import Features from "@/components/landing/Features";
 import UserFlow from "@/components/landing/UserFlow";
-import OneLiner from "@/components/landing/OneLiner";
-import GlobalPayroll from "@/components/landing/GlobalPayroll";
+import RealWorldExample from "@/components/landing/RealWorldExample";
 import CTA from "@/components/landing/CTA";
 import Footer from "@/components/landing/Footer";
 
@@ -18,8 +17,7 @@ export default function Home() {
       <ProductHighlights />
       <Features />
       <UserFlow />
-      <OneLiner />
-      <GlobalPayroll />
+      <RealWorldExample />
       <CTA />
       <Footer />
     </main>

@@ -4,23 +4,23 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
 const SUBSECTION_1_BULLETS = [
-  "Employee records & roles",
-  "Payroll rules & templates",
-  "Attendance & on-chain rewards",
-  "Fiat & crypto settlement",
+  "Employee records & compensation rules",
+  "CVI identity verification",
+  "Automated payroll execution",
+  "Fiat & digital asset settlement",
 ];
 
 const SUBSECTION_2_BULLETS = [
-  "P2P syncs payslips & docs direct",
-  "Local AI generates payslips",
-  "Knowledge base via P2P relay",
-  "Zero cloud exposure",
+  "Payroll receivable origination",
+  "CVA-verified RWA issuance",
+  "Investor marketplace",
+  "Employee salary advances",
 ];
 
 export default function ProductHighlights() {
   return (
     <>
-      {/* Subsection #1: Content left, screenshot right — bg-paper for contrast */}
+      {/* Subsection #1: Enterprise Payroll Meets Web3 */}
       <section className="bg-paper">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-20 lg:py-28">
           <div className="grid lg:grid-cols-[1fr_1.1fr] gap-12 items-center">
@@ -31,10 +31,10 @@ export default function ProductHighlights() {
               transition={{ duration: 0.4 }}
             >
               <h2 className="text-3xl md:text-4xl font-semibold text-ink tracking-tight leading-tight mb-4">
-                HR & Payroll, <span className="text-indigo">Simplified</span>.
+                Enterprise Payroll <span className="text-indigo">Meets Web3</span>
               </h2>
               <p className="text-lg text-sub leading-relaxed mb-6">
-                One platform to manage people, payroll, and compliance — built for Web3.
+                Bring programmable payments into existing payroll operations. Tamarind connects HR, compliance, and digital asset settlement into one verifiable payroll system.
               </p>
               <ul className="space-y-3">
                 {SUBSECTION_1_BULLETS.map((bullet) => (
@@ -57,7 +57,7 @@ export default function ProductHighlights() {
               <figure className="relative rounded-xl overflow-hidden border border-hair bg-panel shadow-sm">
                 <img
                   src="/screenshot-payroll-flow.png"
-                  alt="Tamarind payroll flow builder"
+                  alt="Tamarind HR and payroll workspace"
                   className="block w-full h-auto"
                 />
               </figure>
@@ -66,7 +66,7 @@ export default function ProductHighlights() {
         </div>
       </section>
 
-      {/* Subsection #2: Screenshot left, content right — bg-panel for contrast */}
+      {/* Subsection #2: Marketplace for Payroll RWAs */}
       <section className="bg-panel">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-20 lg:py-28">
           <div className="grid lg:grid-cols-[1.1fr_1fr] gap-12 items-center">
@@ -80,7 +80,7 @@ export default function ProductHighlights() {
               <figure className="relative rounded-xl overflow-hidden border border-hair bg-paper shadow-sm">
                 <img
                   src="/screenshot-knowledge-base.png"
-                  alt="Tamarind knowledge base with AI search"
+                  alt="Tamarind employee token pools"
                   className="block w-full h-auto"
                 />
               </figure>
@@ -94,10 +94,10 @@ export default function ProductHighlights() {
               className="order-1 lg:order-2"
             >
               <h2 className="text-3xl md:text-4xl font-semibold text-ink tracking-tight leading-tight mb-4">
-                Team Collaboration, <span className="text-indigo">AI-Assisted</span>.
+                Marketplace for <span className="text-indigo">Payroll RWAs</span>
               </h2>
               <p className="text-lg text-sub leading-relaxed mb-6">
-                Work together without exposing data to the cloud. AI empowers every step.
+                Connect companies seeking payroll liquidity with investors looking for compliant real-world assets. Tamarind turns verified payroll obligations into transparent investment opportunities.
               </p>
               <ul className="space-y-3">
                 {SUBSECTION_2_BULLETS.map((bullet) => (
