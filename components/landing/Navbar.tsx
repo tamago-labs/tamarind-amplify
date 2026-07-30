@@ -28,7 +28,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         <Brand />
         <nav className="hidden md:flex items-center gap-8 text-sm text-sub font-medium">
-          <a href="#features" className="hover:text-ink transition-colors no-underline">Product</a>
+          <Link href="/explore" className="hover:text-ink transition-colors no-underline">Explore RWAs</Link>
           <a href="#supported-chains" className="hover:text-ink transition-colors no-underline">Supported Chains</a>
           <a href="#flow" className="hover:text-ink transition-colors no-underline">How it works</a>
           <a href="#pricing" className="hover:text-ink transition-colors no-underline">Pricing</a>
@@ -61,7 +61,7 @@ export default function Navbar() {
             className="md:hidden border-t border-hair bg-panel overflow-hidden"
           >
             <div className="px-6 py-4 flex flex-col gap-3">
-              <a href="#features" onClick={() => setOpen(false)} className="text-sm font-medium text-sub hover:text-ink transition-colors no-underline">Product</a>
+              <Link href="/explore" onClick={() => setOpen(false)} className="text-sm font-medium text-sub hover:text-ink transition-colors no-underline">Explore RWAs</Link>
               <a href="#supported-chains" onClick={() => setOpen(false)} className="text-sm font-medium text-sub hover:text-ink transition-colors no-underline">Supported Chains</a>
               <a href="#flow" onClick={() => setOpen(false)} className="text-sm font-medium text-sub hover:text-ink transition-colors no-underline">How it works</a>
               <a href="#pricing" onClick={() => setOpen(false)} className="text-sm font-medium text-sub hover:text-ink transition-colors no-underline">Pricing</a>

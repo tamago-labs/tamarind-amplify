@@ -22,7 +22,7 @@ export default function Hero() {
             Try Demo
           </Link>
           <Link
-            href="/app"
+            href="/explore"
             className="rounded-md border border-hair bg-panel text-ink font-medium text-sm px-5 py-3 hover:border-sub/50 transition no-underline"
           >
             Explore RWAs
