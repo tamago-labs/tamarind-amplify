@@ -29,8 +29,9 @@ export default function Navbar() {
         <Brand />
         <nav className="hidden md:flex items-center gap-8 text-sm text-sub font-medium">
           <a href="#features" className="hover:text-ink transition-colors no-underline">Product</a>
+          <a href="#supported-chains" className="hover:text-ink transition-colors no-underline">Supported Chains</a>
           <a href="#flow" className="hover:text-ink transition-colors no-underline">How it works</a>
-          <a href="#contact" className="hover:text-ink transition-colors no-underline">Contact</a>
+          <a href="#pricing" className="hover:text-ink transition-colors no-underline">Pricing</a>
         </nav>
         <div className="hidden md:flex items-center gap-3">
           <Link href="/app" className="text-sm font-semibold text-white bg-indigo hover:brightness-110 transition rounded-md px-4 py-2 no-underline">
@@ -61,8 +62,9 @@ export default function Navbar() {
           >
             <div className="px-6 py-4 flex flex-col gap-3">
               <a href="#features" onClick={() => setOpen(false)} className="text-sm font-medium text-sub hover:text-ink transition-colors no-underline">Product</a>
+              <a href="#supported-chains" onClick={() => setOpen(false)} className="text-sm font-medium text-sub hover:text-ink transition-colors no-underline">Supported Chains</a>
               <a href="#flow" onClick={() => setOpen(false)} className="text-sm font-medium text-sub hover:text-ink transition-colors no-underline">How it works</a>
-              <a href="#contact" onClick={() => setOpen(false)} className="text-sm font-medium text-sub hover:text-ink transition-colors no-underline">Contact</a>
+              <a href="#pricing" onClick={() => setOpen(false)} className="text-sm font-medium text-sub hover:text-ink transition-colors no-underline">Pricing</a>
               <Link href="/app" onClick={() => setOpen(false)} className="inline-flex items-center justify-center gap-1.5 py-2.5 px-4 bg-indigo text-white rounded-md text-sm font-semibold no-underline">
                 Launch app
               </Link>

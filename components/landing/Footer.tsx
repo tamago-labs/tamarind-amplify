@@ -19,7 +19,7 @@ export default function Footer() {
           <div className="col-span-2 lg:col-span-1">
             <Brand />
             <p className="mt-4 text-sm text-sub max-w-xs leading-relaxed">
-              Privacy-first, decentralized payroll platform bridging Web3 settlement with real-world compliance.
+              Compliance infrastructure for programmable finance. Manage records, verify identities, and originate compliant RWAs.
             </p>
           </div>
 
@@ -27,6 +27,7 @@ export default function Footer() {
             title="Product"
             links={[
               { href: "#features", label: "Features" },
+              { href: "#supported-chains", label: "Supported Chains" },
               { href: "#flow", label: "How it works" },
             ]}
           />
@@ -49,7 +50,7 @@ export default function Footer() {
 
         <div className="mt-10 pt-6 border-t border-hair flex flex-wrap items-center justify-between gap-4">
           <p className="font-mono text-[11px] text-sub">
-            © {new Date().getFullYear()} Tamarind
+            © {new Date().getFullYear()} Tamago Labs
           </p>
           <div className="flex items-center gap-3">
             <a

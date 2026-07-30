@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
-import { BrainCircuit, BookOpen, Workflow, Coins, ArrowRightLeft, Clock } from "lucide-react";
+import { Users, ClipboardList, ShieldCheck, Link, CircleDollarSign, Lock } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 interface Feature {
@@ -12,34 +12,34 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    icon: BrainCircuit,
-    title: "Local AI payslips",
-    body: "On-device AI generates localized payslips with withholding tax and social security breakdowns.",
+    icon: Users,
+    title: "Payee records",
+    body: "Centralized directory for employees, contractors, and vendors.",
   },
   {
-    icon: BookOpen,
-    title: "Private knowledge base",
-    body: "RAG-powered document search with zero cloud exposure — queries relay P2P to employer machine.",
+    icon: ClipboardList,
+    title: "Payroll & invoicing rules",
+    body: "Configurable templates for payroll, contractor payments, and invoicing.",
   },
   {
-    icon: Workflow,
-    title: "Visual flow builder",
-    body: "Drag-and-drop payroll flows connecting employees, payment rules, and wallets.",
+    icon: ShieldCheck,
+    title: "CVI-bound identity",
+    body: "Every participant and wallet carries a verified CVI identity, enforced at every transaction.",
   },
   {
-    icon: Coins,
-    title: "Canton settlement",
-    body: "Atomic payroll settlement on Canton with immutable audit trails and selective disclosure.",
+    icon: Link,
+    title: "Merkle-rooted records",
+    body: "Every payslip, invoice, and settlement is hashed into a verifiable, tamper-proof history.",
   },
   {
-    icon: ArrowRightLeft,
-    title: "P2P distribution",
-    body: "Payslips and documents synced direct to employee machines via encrypted peer-to-peer.",
+    icon: CircleDollarSign,
+    title: "Invoice receivable origination",
+    body: "Verified invoice history becomes a RWA — ready for financing, without reassembling evidence.",
   },
   {
-    icon: Clock,
-    title: "Attendance & rewards",
-    body: "On-chain daily check-ins with automatic reward point tracking on Canton smart contracts.",
+    icon: Lock,
+    title: "Tiered, permissioned access",
+    body: "RWA holding and transfer rights are enforced by CVI tier — non-compliant transfers fail by design.",
   },
 ];
 
@@ -80,8 +80,8 @@ export default function Features() {
             Key Features
           </p>
           <h2 className="text-3xl md:text-4xl font-semibold text-ink tracking-tight leading-tight">
-            Everything you need to{" "}
-            <span className="text-indigo">run payroll</span>.
+            The Workspace Behind Every{" "}
+            <span className="text-indigo">Verified Record</span>
           </h2>
         </motion.div>
 

@@ -11,7 +11,7 @@ export default function Hero() {
         </h1>
 
         <p className="mt-6 text-base md:text-lg text-sub max-w-2xl mx-auto leading-relaxed">
-          Companies manage payroll, invoices, receivables, and payments through a compliance workspace with CVI-bound identities and immutable Merkle-rooted records. Investors access CVA-verified RWAs backed by the same financial history for financing, salary advances, and receivable markets.
+          Companies manage invoices, receivables, payroll, and payments through a compliance workspace with CVI-bound identities and immutable Merkle-rooted records. Investors access CVA-verified RWAs backed by the same financial history.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -19,7 +19,7 @@ export default function Hero() {
             href="/app"
             className="rounded-md bg-indigo text-white font-semibold text-sm px-5 py-3 hover:brightness-110 transition no-underline"
           >
-            Request Demo
+            Try Demo
           </Link>
           <Link
             href="/app"

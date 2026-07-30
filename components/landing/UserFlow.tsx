@@ -1,7 +1,6 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
-import { Terminal } from "lucide-react";
 
 interface Step {
   num: string;
@@ -12,23 +11,23 @@ interface Step {
 const steps: Step[] = [
   {
     num: "01",
-    title: "Configure",
-    body: "Set up company profile, employees with salary and tax info, and payment templates.",
+    title: "Operate",
+    body: "Run payroll, invoicing, and contractor payments from one compliant workspace. Every action generates a record.",
   },
   {
     num: "02",
-    title: "Build Flow",
-    body: "Connect wallets, employees, and payment rules using the visual flow builder.",
+    title: "Verify",
+    body: "Each record — payslip, invoice, settlement — is hashed into a Merkle root, tied to CVI-bound identity.",
   },
   {
     num: "03",
-    title: "Run Payroll",
-    body: "Click Start. The system processes payments atomically on Canton with full audit trail.",
+    title: "Originate",
+    body: "Verified invoice history becomes a CVA-issued RWA — a compliant, financeable receivable, built on the payment proof behind it.",
   },
   {
     num: "04",
-    title: "Distribute",
-    body: "Employees receive payslips via P2P and access assets through the portal.",
+    title: "Finance",
+    body: "Tier-eligible investors access the marketplace, evaluate origination history directly, and finance receivables without reconstructed evidence.",
   },
 ];
 
@@ -63,15 +62,14 @@ const circleVariants: Variants = {
 export default function UserFlow() {
   return (
     <section id="flow" className="bg-panel">
-      <div className="max-w-4xl mx-auto px-6 lg:px-10 py-20 lg:py-28">
+      <div className="max-w-3xl mx-auto px-6 lg:px-10 py-20 lg:py-28">
         <div className="mb-12">
           <p className="font-mono text-[11px] font-medium tracking-wide text-sub uppercase mb-3">
             How it works
           </p>
           <h2 className="text-3xl md:text-4xl font-semibold text-ink tracking-tight leading-tight max-w-2xl">
-            From payroll documents to{" "}
-            <span className="text-indigo">private settlements</span> — in
-            four steps.
+            From Operation to{" "}
+            <span className="text-indigo">Origination</span> — in Four Steps.
           </h2>
         </div>
 
@@ -116,30 +114,6 @@ export default function UserFlow() {
             </motion.li>
           ))}
         </ol>
-
-        {/* Terminal */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-          className="mt-12"
-        >
-          <div className="bg-paper border border-hair rounded-xl overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-hair">
-              <Terminal size={14} className="text-sub" />
-              <span className="font-mono text-[11px] text-sub">Terminal</span>
-            </div>
-            <div className="px-5 py-4">
-              <code className="font-mono text-sm text-ink">
-                <span className="text-okgreen">$</span> npx @tamago-labs/tamarind
-              </code>
-            </div>
-          </div>
-          <p className="mt-4 text-sm text-sub leading-relaxed text-center">
-            Start the P2P terminal to join your team&apos;s payroll network. Sync payslips, chat, and search docs — zero cloud.
-          </p>
-        </motion.div>
       </div>
     </section>
   );
