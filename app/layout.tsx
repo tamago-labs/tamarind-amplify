@@ -17,22 +17,20 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tamarind — Compliant Web3 Payroll & Payroll RWA Marketplace",
+  title: "Tamarind — Compliance Infrastructure for Programmable Finance",
   description:
-    "Run compliant global payroll with CVI-verified identities, immutable Merkle-rooted payroll records, and fiat or digital asset settlement. Originate Payroll RWAs and connect companies with investors through a trusted marketplace.",
+    "Tamarind is compliance infrastructure for programmable finance. Manage payroll, invoices, and financial records in one workspace, then convert verified obligations into compliant RWAs for settlement and financing.",
   keywords: [
-    "Web3 Payroll",
-    "Payroll RWA",
-    "Payroll Receivables",
-    "Payroll Marketplace",
-    "Payroll Infrastructure",
-    "RWA Marketplace",
-    "Cleanverse",
+    "Compliance Infrastructure",
+    "Programmable Finance",
+    "RWA Origination",
     "CVI",
     "CVA",
+    "Cleanverse",
+    "Financial Records",
     "Merkle Proof",
-    "Digital Asset Payroll",
-    "Global Payroll",
+    "On-Chain Settlement",
+    "Digital Assets",
   ],
 };
 

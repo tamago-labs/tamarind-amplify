@@ -6,13 +6,12 @@ export default function Hero() {
     <section className="relative overflow-hidden">
       <div className="max-w-4xl mx-auto px-6 lg:px-10 pt-8 pb-24 lg:pt-12 lg:pb-32 text-center">
         <h1 className="mt-6 text-3xl md:text-4xl lg:text-5xl font-semibold text-ink tracking-tight leading-[1.1]">
-          Compliant Web3 Payroll for Companies.
-          <br />
-          <span className="text-indigo">Payroll RWAs for Investors.</span>
+          Compliant RWAs Backed by{" "}
+          <span className="text-indigo">Real Financial Operations</span>
         </h1>
 
         <p className="mt-6 text-base md:text-lg text-sub max-w-2xl mx-auto leading-relaxed">
-          Companies run global payroll with CVI-bound identities, immutable Merkle-rooted payroll records, and settlement in fiat or digital assets. Investors access CVA-verified Payroll RWAs for salary advances and compliant financing.
+          Companies manage payroll, invoices, receivables, and payments through a compliance workspace with CVI-bound identities and immutable Merkle-rooted records. Investors access CVA-verified RWAs backed by the same financial history for financing, salary advances, and receivable markets.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -20,13 +19,13 @@ export default function Hero() {
             href="/app"
             className="rounded-md bg-indigo text-white font-semibold text-sm px-5 py-3 hover:brightness-110 transition no-underline"
           >
-            Launch Web3 Payroll
+            Request Demo
           </Link>
           <Link
             href="/app"
             className="rounded-md border border-hair bg-panel text-ink font-medium text-sm px-5 py-3 hover:border-sub/50 transition no-underline"
           >
-            Browse RWA Marketplace
+            Explore RWAs
           </Link>
         </div>
 
@@ -38,12 +37,12 @@ export default function Hero() {
           <span className="hidden sm:inline text-hair">·</span>
           <span className="flex items-center gap-2">
             <ShieldCheck size={14} className="text-okgreen flex-shrink-0" />
-            Fiat & Digital Asset Payroll
+            15+ Chains USDC Settlement
           </span>
           <span className="hidden sm:inline text-hair">·</span>
           <span className="flex items-center gap-2">
             <ShieldCheck size={14} className="text-okgreen flex-shrink-0" />
-            Payroll RWA Marketplace
+            RWA Origination
           </span>
         </div>
       </div>
