@@ -18,6 +18,7 @@ const schema = a.schema({
       description: a.string(),
       inviteCode: a.string().required(),
       ownerId: a.string().required(),
+      members: a.hasMany("WorkspaceMember", "workspaceId"),
     })
     .authorization((allow) => [
       allow.authenticated().to(["read"]),
