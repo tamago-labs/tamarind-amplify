@@ -22,8 +22,6 @@ import Dashboard from "@/components/app/Dashboard";
 
 Amplify.configure(outputs);
 
-const client = generateClient<Schema>();
-
 const theme: Theme = {
   name: "Tamarind Theme",
   tokens: {
@@ -216,6 +214,7 @@ function AuthenticatedApp({ signOut, user }: { signOut?: () => void; user?: any 
   const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const client = generateClient<Schema>();
   const userId = user?.username || user?.userId || "";
 
   useEffect(() => {
