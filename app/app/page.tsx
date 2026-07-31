@@ -222,7 +222,6 @@ function AuthenticatedApp({ signOut, user }: { signOut?: () => void; user?: any 
   }, [userId]);
 
   async function loadWorkspaces() {
-    console.log("Loading workspaces for userId:", userId);
     if (!userId) {
       setLoading(false);
       return;
@@ -232,8 +231,6 @@ function AuthenticatedApp({ signOut, user }: { signOut?: () => void; user?: any 
       const { data: memberships, errors } = await client.models.WorkspaceMember.list({
         filter: { userId: { eq: userId } },
       });
-
-      console.log("Memberships result:", { memberships, errors });
 
       if (memberships && memberships.length > 0) {
         const workspaceList: Workspace[] = [];
@@ -261,31 +258,25 @@ function AuthenticatedApp({ signOut, user }: { signOut?: () => void; user?: any 
   }
 
   async function handleCreateWorkspace(name: string, description: string) {
-    console.log("Creating workspace:", { name, description, userId });
     try {
       const inviteCode = generateInviteCode();
-      console.log("Generated invite code:", inviteCode);
 
-      const { data: workspace, errors } = await client.models.Workspace.create({
+      const { data: workspace } = await client.models.Workspace.create({
         name,
         description,
         inviteCode,
         ownerId: userId,
       });
 
-      console.log("Workspace create result:", { workspace, errors });
-
       if (workspace) {
-        const { data: member, errors: memberErrors } = await client.models.WorkspaceMember.create({
+        await client.models.WorkspaceMember.create({
           workspaceId: workspace.id,
           userId,
-          role: "company",
+          role: "admin",
           status: "active",
         });
 
-        console.log("Member create result:", { member, memberErrors });
-
-        setWorkspaces([...workspaces, { id: workspace.id, name, role: "company" }]);
+        setWorkspaces([...workspaces, { id: workspace.id, name, role: "admin" }]);
       }
     } catch (error) {
       console.error("Error creating workspace:", error);

@@ -4,12 +4,12 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-export default function Brand() {
+export default function Brand({ href = "/" }: { href?: string }) {
   const [hovered, setHovered] = useState(false);
 
   return (
     <Link
-      href="/"
+      href={href}
       className="flex items-center gap-2 no-underline"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

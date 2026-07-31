@@ -25,7 +25,7 @@ export default function Sidebar() {
       }`}
     >
       <div className="h-16 flex items-center justify-between px-4 border-b border-hair">
-        {!collapsed && <Brand />}
+        {!collapsed && <Brand href="/app" />}
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="text-sub hover:text-ink transition-colors p-1"
