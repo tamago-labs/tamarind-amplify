@@ -1,6 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Amplify } from "aws-amplify";
+import { generateClient } from "aws-amplify/data";
+import type { Schema } from "@/amplify/data/resource";
 import outputs from "@/amplify_outputs.json";
 import {
   Authenticator,
@@ -9,13 +12,17 @@ import {
   useTheme,
   View,
   Heading,
-  Image,
   Text,
   Button,
   useAuthenticator,
 } from "@aws-amplify/ui-react";
+import WorkspaceSelector from "@/components/app/WorkspaceSelector";
+import AppLayout from "@/components/app/AppLayout";
+import Dashboard from "@/components/app/Dashboard";
 
 Amplify.configure(outputs);
+
+const client = generateClient<Schema>();
 
 const theme: Theme = {
   name: "Tamarind Theme",
@@ -126,7 +133,7 @@ function AuthFooter() {
   return (
     <View textAlign="center" padding={`0 0 ${tokens.space.xl} 0`}>
       <Text color={tokens.colors.neutral[60]} fontSize="sm">
-        © {new Date().getFullYear()} Tamarind. All rights reserved.
+        © {new Date().getFullYear()} Tamago Labs. All rights reserved.
       </Text>
     </View>
   );
@@ -192,30 +199,164 @@ function SignUpFooter() {
   );
 }
 
-function Dashboard({ signOut, user }: { signOut?: () => void; user?: { username?: string } }) {
+function generateInviteCode(): string {
+  return Math.random().toString(36).substring(2, 10).toUpperCase();
+}
+
+interface Workspace {
+  id: string;
+  name: string;
+  role: string;
+}
+
+function AuthenticatedApp({ signOut, user }: { signOut?: () => void; user?: any }) {
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const userId = user?.username || user?.userId || "";
+
+  useEffect(() => {
+    loadWorkspaces();
+  }, [userId]);
+
+  async function loadWorkspaces() {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data: memberships } = await client.models.WorkspaceMember.list({
+        filter: { userId: { eq: userId } },
+      });
+
+      if (memberships && memberships.length > 0) {
+        const workspaceList: Workspace[] = [];
+        for (const membership of memberships) {
+          if (membership.workspaceId) {
+            const { data: workspace } = await client.models.Workspace.get({
+              id: membership.workspaceId,
+            });
+            if (workspace) {
+              workspaceList.push({
+                id: workspace.id,
+                name: workspace.name,
+                role: membership.role || "member",
+              });
+            }
+          }
+        }
+        setWorkspaces(workspaceList);
+      }
+    } catch (error) {
+      console.error("Error loading workspaces:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleCreateWorkspace(name: string, description: string) {
+    try {
+      const inviteCode = generateInviteCode();
+
+      const { data: workspace } = await client.models.Workspace.create({
+        name,
+        description,
+        inviteCode,
+        ownerId: userId,
+      });
+
+      if (workspace) {
+        await client.models.WorkspaceMember.create({
+          workspaceId: workspace.id,
+          userId,
+          role: "company",
+          status: "active",
+        });
+
+        setWorkspaces([...workspaces, { id: workspace.id, name, role: "company" }]);
+      }
+    } catch (error) {
+      console.error("Error creating workspace:", error);
+    }
+  }
+
+  async function handleJoinWorkspace(inviteCode: string) {
+    try {
+      const { data: allWorkspaces } = await client.models.Workspace.list({
+        filter: { inviteCode: { eq: inviteCode } },
+      });
+
+      if (allWorkspaces && allWorkspaces.length > 0) {
+        const workspace = allWorkspaces[0];
+
+        const { data: existingMembership } = await client.models.WorkspaceMember.list({
+          filter: {
+            workspaceId: { eq: workspace.id },
+            userId: { eq: userId },
+          },
+        });
+
+        if (existingMembership && existingMembership.length > 0) {
+          alert("You are already a member of this workspace.");
+          return;
+        }
+
+        await client.models.WorkspaceMember.create({
+          workspaceId: workspace.id,
+          userId,
+          role: "payee",
+          status: "pending",
+        });
+
+        alert("Request sent! Waiting for admin approval.");
+      } else {
+        alert("Invalid invite code.");
+      }
+    } catch (error) {
+      console.error("Error joining workspace:", error);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-panel flex items-center justify-center">
+        <p className="text-sub">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!selectedWorkspace) {
+    return (
+      <>
+        <div className="fixed top-4 right-4 z-50">
+          <Button variation="link" onClick={signOut} className="text-sub hover:text-ink">
+            Sign out
+          </Button>
+        </div>
+        <WorkspaceSelector
+          workspaces={workspaces}
+          onSelect={(id) => {
+            const ws = workspaces.find((w) => w.id === id);
+            if (ws) setSelectedWorkspace(ws);
+          }}
+          onCreate={handleCreateWorkspace}
+          onJoin={handleJoinWorkspace}
+        />
+      </>
+    );
+  }
+
+  const pendingMessage =
+    selectedWorkspace.role !== "admin"
+      ? `Your role (${selectedWorkspace.role}) is pending approval.`
+      : undefined;
+
   return (
-    <View
-      padding="xl"
-      textAlign="center"
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#EEF0F4",
-      }}
-    >
-      <Heading level={3} marginBottom="md">
-        Welcome, {user?.username}
-      </Heading>
-      <Text marginBottom="xl" color="#5A5F6E">
-        You are now signed in to Tamarind.
-      </Text>
-      <Button variation="primary" onClick={() => signOut?.()}>
-        Sign out
-      </Button>
-    </View>
+    <AppLayout workspaceName={selectedWorkspace.name} pendingMessage={pendingMessage}>
+      <Dashboard />
+    </AppLayout>
   );
 }
 
@@ -255,7 +396,7 @@ export default function AppPage() {
   return (
     <ThemeProvider theme={theme}>
       <Authenticator formFields={formFields} components={components}>
-        {({ signOut, user }: any) => <Dashboard signOut={signOut} user={user} />}
+        {({ signOut, user }: any) => <AuthenticatedApp signOut={signOut} user={user} />}
       </Authenticator>
     </ThemeProvider>
   );
