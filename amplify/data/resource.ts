@@ -8,8 +8,7 @@ const schema = a.schema({
       avatarUrl: a.string(),
     })
     .authorization((allow) => [
-      allow.authenticated().to(["read", "update"]),
-      allow.owner(),
+      allow.authenticated(),
     ]),
 
   Workspace: a
@@ -21,8 +20,7 @@ const schema = a.schema({
       members: a.hasMany("WorkspaceMember", "workspaceId"),
     })
     .authorization((allow) => [
-      allow.authenticated().to(["read"]),
-      allow.owner(),
+      allow.authenticated(),
     ]),
 
   WorkspaceMember: a
@@ -34,8 +32,7 @@ const schema = a.schema({
       workspace: a.belongsTo("Workspace", "workspaceId"),
     })
     .authorization((allow) => [
-      allow.authenticated().to(["read"]),
-      allow.owner(),
+      allow.authenticated(),
     ]),
 });
 

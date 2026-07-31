@@ -88,41 +88,43 @@ function AuthHeader() {
   const { tokens } = useTheme();
 
   return (
-    <View textAlign="center" padding={`${tokens.space.xl} 0 0 ${tokens.space.xl}`}>
-      <View
-        as="div"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          marginBottom: "8px",
-        }}
-      >
-        <span
+    <View textAlign="center" style={{ padding: 0, marginTop: "32px", marginBottom: "24px" }}>
+      <a href="/" style={{ textDecoration: "none" }}>
+        <View
+          as="div"
           style={{
-            width: "24px",
-            height: "24px",
-            borderRadius: "6px",
-            backgroundColor: "#5B4FE8",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            gap: "8px",
+            cursor: "pointer",
           }}
         >
           <span
             style={{
-              width: "8px",
-              height: "8px",
-              backgroundColor: "white",
-              borderRadius: "2px",
+              width: "24px",
+              height: "24px",
+              borderRadius: "6px",
+              backgroundColor: "#5B4FE8",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-          />
-        </span>
-        <Heading level={3} style={{ margin: 0 }}>
-          tamarind
-        </Heading>
-      </View>
+          >
+            <span
+              style={{
+                width: "8px",
+                height: "8px",
+                backgroundColor: "white",
+                borderRadius: "2px",
+              }}
+            />
+          </span>
+          <Heading level={3} style={{ margin: 0, color: "#1A1D26" }}>
+            tamarind
+          </Heading>
+        </View>
+      </a>
     </View>
   );
 }
@@ -131,7 +133,7 @@ function AuthFooter() {
   const { tokens } = useTheme();
 
   return (
-    <View textAlign="center" padding={`0 0 ${tokens.space.xl} 0`}>
+    <View textAlign="center" padding={`0 0 ${tokens.space.xl} 0`} marginTop="xl">
       <Text color={tokens.colors.neutral[60]} fontSize="sm">
         © {new Date().getFullYear()} Tamago Labs. All rights reserved.
       </Text>
@@ -221,15 +223,18 @@ function AuthenticatedApp({ signOut, user }: { signOut?: () => void; user?: any 
   }, [userId]);
 
   async function loadWorkspaces() {
+    console.log("Loading workspaces for userId:", userId);
     if (!userId) {
       setLoading(false);
       return;
     }
 
     try {
-      const { data: memberships } = await client.models.WorkspaceMember.list({
+      const { data: memberships, errors } = await client.models.WorkspaceMember.list({
         filter: { userId: { eq: userId } },
       });
+
+      console.log("Memberships result:", { memberships, errors });
 
       if (memberships && memberships.length > 0) {
         const workspaceList: Workspace[] = [];
@@ -257,23 +262,29 @@ function AuthenticatedApp({ signOut, user }: { signOut?: () => void; user?: any 
   }
 
   async function handleCreateWorkspace(name: string, description: string) {
+    console.log("Creating workspace:", { name, description, userId });
     try {
       const inviteCode = generateInviteCode();
+      console.log("Generated invite code:", inviteCode);
 
-      const { data: workspace } = await client.models.Workspace.create({
+      const { data: workspace, errors } = await client.models.Workspace.create({
         name,
         description,
         inviteCode,
         ownerId: userId,
       });
 
+      console.log("Workspace create result:", { workspace, errors });
+
       if (workspace) {
-        await client.models.WorkspaceMember.create({
+        const { data: member, errors: memberErrors } = await client.models.WorkspaceMember.create({
           workspaceId: workspace.id,
           userId,
           role: "company",
           status: "active",
         });
+
+        console.log("Member create result:", { member, memberErrors });
 
         setWorkspaces([...workspaces, { id: workspace.id, name, role: "company" }]);
       }
