@@ -42,6 +42,7 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "overview", label: "Overview", icon: "overview" },
     { page: "workflows", label: "Workflows", icon: "workflows" },
     { page: "wallets", label: "Wallets", icon: "wallets" },
+    { page: "identities", label: "Identities", icon: "identity" },
     { page: "payments", label: "Payments", icon: "payments" },
     { page: "invoices", label: "Invoices", icon: "invoices" },
     { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
@@ -53,6 +54,7 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "overview", label: "Overview", icon: "overview" },
     { page: "workflows", label: "Workflows", icon: "workflows" },
     { page: "wallets", label: "Wallets", icon: "wallets" },
+    { page: "identities", label: "Identities", icon: "identity" },
     { page: "payments", label: "Payments", icon: "payments" },
     { page: "invoices", label: "Invoices", icon: "invoices" },
     { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
@@ -63,7 +65,6 @@ const navByRole: Record<string, NavItem[]> = {
   counterParty: [
     { page: "overview", label: "Overview", icon: "overview" },
     { page: "identity", label: "Identity", icon: "identity" },
-    { page: "wallets", label: "Wallets", icon: "wallets" },
     { page: "payments", label: "Payments", icon: "payments" },
     { page: "invoices", label: "Invoices", icon: "invoices" },
     { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
