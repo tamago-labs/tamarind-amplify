@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   ArrowDownToLine,
   BookOpen,
@@ -84,16 +84,15 @@ export function getNavigation(role: string): NavItem[] {
   return navByRole[role] || [];
 }
 
-export default function Sidebar({ role }: { role: string }) {
+export default function Sidebar({ role, workspaceId }: { role: string; workspaceId: string }) {
   const [collapsed, setCollapsed] = useState(false);
-  const searchParams = useSearchParams();
-  const currentPage = searchParams.get("page") || "overview";
+  const pathname = usePathname();
   const navItems = getNavigation(role);
 
   return (
     <aside className={`flex min-h-screen flex-col border-r border-hair bg-panel transition-all duration-200 ${collapsed ? "w-16" : "w-60"}`}>
       <div className="flex h-16 items-center justify-between border-b border-hair px-4">
-        {!collapsed && <Brand href="/app?page=overview" />}
+        {!collapsed && <Brand href="/app" />}
         <button onClick={() => setCollapsed(!collapsed)} className="p-1 text-sub transition-colors hover:text-ink" aria-label="Toggle sidebar">
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
@@ -101,9 +100,12 @@ export default function Sidebar({ role }: { role: string }) {
       <nav className="flex-1 space-y-1 px-2 py-4">
         {navItems.map((item) => {
           const Icon = icons[item.icon];
-          const active = currentPage === item.page || (item.page === "organization-members" && ["organization-members", "organization-templates"].includes(currentPage));
+          const href = item.page === "organization-members"
+            ? `/app/workspaces/${workspaceId}/organization/members`
+            : `/app/workspaces/${workspaceId}/${item.page}`;
+          const active = pathname === href || (item.page === "organization-members" && pathname.startsWith(`/app/workspaces/${workspaceId}/organization`));
           return (
-            <Link key={item.page} href={`/app?page=${item.page}`} className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${active ? "bg-indigo/10 text-indigo" : "text-sub hover:bg-paper hover:text-ink"}`}>
+            <Link key={item.page} href={href} className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${active ? "bg-indigo/10 text-indigo" : "text-sub hover:bg-paper hover:text-ink"}`}>
               <Icon size={18} />
               {!collapsed && <span>{item.label}</span>}
             </Link>

@@ -140,7 +140,15 @@ app/
   page.tsx              # Landing page
   layout.tsx            # Root layout with SEO
   app/
-    page.tsx            # Authenticated workspace selection and app shell
+    page.tsx            # Authenticated workspace selection
+    layout.tsx          # Shared Amplify authentication boundary
+    workspaces/[workspaceId]/
+      layout.tsx        # Workspace membership guard and dashboard shell
+      overview/page.tsx
+      [page]/page.tsx   # Role-specific placeholder modules
+      organization/
+        members/page.tsx
+        templates/page.tsx
   explore/
     page.tsx            # RWA marketplace placeholder
 
@@ -160,7 +168,6 @@ components/
     AppLayout.tsx
     Sidebar.tsx
     Dashboard.tsx
-    DashboardRouter.tsx
     OrganizationMembers.tsx
     PendingApproval.tsx
     InvitePopover.tsx

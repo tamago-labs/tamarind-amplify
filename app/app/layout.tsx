@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AppAuth from "@/components/app/AppAuth";
 
 export const metadata: Metadata = {
   title: "Tamarind",
@@ -10,5 +11,5 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <AppAuth>{children}</AppAuth>;
 }

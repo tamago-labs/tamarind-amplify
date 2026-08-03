@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
 import { LockKeyhole, Users } from "lucide-react";
+import { useWorkspace } from "./WorkspaceContext";
 
 const client = generateClient<Schema>();
 const assignableRoles = ["company", "counterParty", "partner"] as const;
@@ -24,6 +25,7 @@ function formatDate(value?: string | null) {
 }
 
 export default function OrganizationMembers({ workspaceId, adminId }: { workspaceId: string; adminId: string }) {
+  const { role } = useWorkspace();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -42,7 +44,11 @@ export default function OrganizationMembers({ workspaceId, adminId }: { workspac
     setLoading(false);
   }
 
-  useEffect(() => { loadMembers(); }, [workspaceId]);
+  useEffect(() => {
+    if (role === "admin" || role === "company") loadMembers();
+  }, [workspaceId, role]);
+
+  if (role !== "admin" && role !== "company") return <p className="rounded-xl border border-hair bg-panel p-8 text-center text-sm text-sub">This page is not available for your workspace role.</p>;
 
   async function assignRole(member: Member, role: AssignableRole) {
     setSavingId(member.id);
@@ -64,8 +70,8 @@ export default function OrganizationMembers({ workspaceId, adminId }: { workspac
         <div className="flex items-center gap-2 rounded-lg bg-indigo/10 px-3 py-2 text-xs font-medium text-indigo"><Users size={15} /> {members.length} members</div>
       </div>
       <div className="mb-5 flex gap-2 border-b border-hair pb-3">
-        <a href="/app?page=organization-members" className="rounded-md bg-indigo px-3 py-2 text-sm font-medium text-white">Members</a>
-        <a href="/app?page=organization-templates" className="rounded-md px-3 py-2 text-sm font-medium text-sub hover:bg-paper hover:text-ink">Templates</a>
+        <a href={`/app/workspaces/${workspaceId}/organization/members`} className="rounded-md bg-indigo px-3 py-2 text-sm font-medium text-white">Members</a>
+        <a href={`/app/workspaces/${workspaceId}/organization/templates`} className="rounded-md px-3 py-2 text-sm font-medium text-sub hover:bg-paper hover:text-ink">Templates</a>
       </div>
       <div className="overflow-x-auto rounded-xl border border-hair bg-panel">
         <table className="w-full min-w-[720px] text-left text-sm">
