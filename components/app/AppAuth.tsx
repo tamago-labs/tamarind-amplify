@@ -14,6 +14,7 @@ import {
   useTheme,
   View,
 } from "@aws-amplify/ui-react";
+import WalletProviders from "./WalletProviders";
 
 Amplify.configure(outputs);
 
@@ -49,5 +50,5 @@ const components = { Header: AuthHeader, Footer: AuthFooter, SignIn: { Header: S
 const formFields = { signIn: { username: { placeholder: "Enter your email" } }, signUp: { password: { label: "Password:", placeholder: "Enter your password", isRequired: true }, confirm_password: { label: "Confirm Password:", isRequired: true } } };
 
 export default function AppAuth({ children }: { children: ReactNode }) {
-  return <ThemeProvider theme={theme}><Authenticator formFields={formFields} components={components}>{children}</Authenticator></ThemeProvider>;
+  return <ThemeProvider theme={theme}><Authenticator formFields={formFields} components={components}><WalletProviders>{children}</WalletProviders></Authenticator></ThemeProvider>;
 }

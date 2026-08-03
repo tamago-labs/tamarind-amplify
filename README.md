@@ -102,6 +102,7 @@ Send and receive USDC across 20+ chains. Cross-chain transfers powered by Circle
 
 **Testnets (Live during Alpha):**
 - Base Sepolia
+- Ethereum Sepolia
 - Monad Testnet
 
 ---
