@@ -27,8 +27,10 @@ const schema = a.schema({
     .model({
       workspaceId: a.id().required(),
       userId: a.string().required(),
-      role: a.enum(["admin", "company", "payee", "payer", "partner"]),
+      role: a.enum(["admin", "company", "counterParty", "partner"]),
       status: a.enum(["pending", "active"]),
+      assignedAt: a.datetime(),
+      assignedBy: a.string(),
       workspace: a.belongsTo("Workspace", "workspaceId"),
     })
     .authorization((allow) => [

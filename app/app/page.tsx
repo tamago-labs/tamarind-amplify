@@ -18,7 +18,8 @@ import {
 } from "@aws-amplify/ui-react";
 import WorkspaceSelector from "@/components/app/WorkspaceSelector";
 import AppLayout from "@/components/app/AppLayout";
-import Dashboard from "@/components/app/Dashboard";
+import DashboardRouter from "@/components/app/DashboardRouter";
+import PendingApproval from "@/components/app/PendingApproval";
 
 Amplify.configure(outputs);
 
@@ -207,6 +208,8 @@ interface Workspace {
   id: string;
   name: string;
   role: string;
+  status: string;
+  inviteCode: string;
 }
 
 function AuthenticatedApp({ signOut, user }: { signOut?: () => void; user?: any }) {
@@ -243,7 +246,9 @@ function AuthenticatedApp({ signOut, user }: { signOut?: () => void; user?: any 
               workspaceList.push({
                 id: workspace.id,
                 name: workspace.name,
-                role: membership.role || "member",
+                role: membership.role || "pending",
+                status: membership.status || "pending",
+                inviteCode: workspace.inviteCode,
               });
             }
           }
@@ -276,7 +281,7 @@ function AuthenticatedApp({ signOut, user }: { signOut?: () => void; user?: any 
           status: "active",
         });
 
-        setWorkspaces([...workspaces, { id: workspace.id, name, role: "admin" }]);
+        setWorkspaces([...workspaces, { id: workspace.id, name, role: "admin", status: "active", inviteCode }]);
       }
     } catch (error) {
       console.error("Error creating workspace:", error);
@@ -307,7 +312,6 @@ function AuthenticatedApp({ signOut, user }: { signOut?: () => void; user?: any 
         await client.models.WorkspaceMember.create({
           workspaceId: workspace.id,
           userId,
-          role: "payee",
           status: "pending",
         });
 
@@ -349,14 +353,13 @@ function AuthenticatedApp({ signOut, user }: { signOut?: () => void; user?: any 
     );
   }
 
-  const pendingMessage =
-    selectedWorkspace.role !== "admin"
-      ? `Your role (${selectedWorkspace.role}) is pending approval.`
-      : undefined;
+  if (selectedWorkspace.status === "pending" || selectedWorkspace.role === "pending") {
+    return <PendingApproval workspaceName={selectedWorkspace.name} />;
+  }
 
   return (
-    <AppLayout workspaceName={selectedWorkspace.name} pendingMessage={pendingMessage}>
-      <Dashboard />
+    <AppLayout workspaceName={selectedWorkspace.name} role={selectedWorkspace.role} inviteCode={selectedWorkspace.inviteCode}>
+      <DashboardRouter role={selectedWorkspace.role} workspaceId={selectedWorkspace.id} userId={userId} />
     </AppLayout>
   );
 }

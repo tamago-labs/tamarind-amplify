@@ -2,21 +2,26 @@
 
 import { ReactNode } from "react";
 import Sidebar from "./Sidebar";
+import InvitePopover from "./InvitePopover";
 
 interface AppLayoutProps {
   children: ReactNode;
   workspaceName: string;
   pendingMessage?: string;
+  role: string;
+  inviteCode: string;
 }
 
 export default function AppLayout({
   children,
   workspaceName,
   pendingMessage,
+  role,
+  inviteCode,
 }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-panel flex">
-      <Sidebar />
+      <Sidebar role={role} />
 
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 flex items-center justify-between px-6 border-b border-hair bg-panel">
@@ -25,6 +30,10 @@ export default function AppLayout({
               Workspace
             </span>
             <span className="text-sm font-semibold text-ink">{workspaceName}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="hidden rounded-full bg-indigo/10 px-2.5 py-1 text-xs font-medium capitalize text-indigo sm:inline-flex">{role}</span>
+            {role === "admin" && <InvitePopover inviteCode={inviteCode} />}
           </div>
         </header>
 
