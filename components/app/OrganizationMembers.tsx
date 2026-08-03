@@ -69,10 +69,6 @@ export default function OrganizationMembers({ workspaceId, adminId }: { workspac
         <div><p className="font-mono text-[11px] font-medium uppercase tracking-wide text-sub">Organization</p><h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink">Members</h1><p className="mt-1 text-sm text-sub">Manage access and workspace roles.</p></div>
         <div className="flex items-center gap-2 rounded-lg bg-indigo/10 px-3 py-2 text-xs font-medium text-indigo"><Users size={15} /> {members.length} members</div>
       </div>
-      <div className="mb-5 flex gap-2 border-b border-hair pb-3">
-        <a href={`/app/workspaces/${workspaceId}/organization/members`} className="rounded-md bg-indigo px-3 py-2 text-sm font-medium text-white">Members</a>
-        <a href={`/app/workspaces/${workspaceId}/organization/templates`} className="rounded-md px-3 py-2 text-sm font-medium text-sub hover:bg-paper hover:text-ink">Templates</a>
-      </div>
       <div className="overflow-x-auto rounded-xl border border-hair bg-panel">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-hair bg-paper/60 text-xs uppercase tracking-wide text-sub"><tr><th className="px-5 py-4 font-medium">Member</th><th className="px-5 py-4 font-medium">Status</th><th className="px-5 py-4 font-medium">Role</th><th className="px-5 py-4 font-medium">Created</th><th className="px-5 py-4 font-medium">Updated</th></tr></thead>

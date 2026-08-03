@@ -8,6 +8,7 @@ export interface WorkspaceContextValue {
   role: string;
   status: string;
   inviteCode: string;
+  ownerId: string;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);

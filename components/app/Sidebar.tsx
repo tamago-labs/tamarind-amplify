@@ -14,7 +14,6 @@ import {
   LayoutDashboard,
   Network,
   Receipt,
-  Settings2,
   ShieldCheck,
   Users,
   Wallet,
@@ -112,7 +111,6 @@ export default function Sidebar({ role, workspaceId }: { role: string; workspace
           );
         })}
       </nav>
-      {!collapsed && <div className="border-t border-hair p-3"><p className="flex items-center gap-2 px-2 text-xs text-sub"><Settings2 size={14} /> Workspace settings</p></div>}
     </aside>
   );
 }

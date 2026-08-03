@@ -14,7 +14,7 @@ const client = generateClient<Schema>();
 export default function WorkspaceLayout({ children, params }: { children: ReactNode; params: { workspaceId: string } }) {
   const { user } = useAuthenticator((context) => [context.user]);
   const router = useRouter();
-  const [state, setState] = useState<{ name: string; role: string; status: string; inviteCode: string } | null>(null);
+  const [state, setState] = useState<{ name: string; role: string; status: string; inviteCode: string; ownerId: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const userId = user?.username || user?.userId || "";
 
@@ -26,7 +26,7 @@ export default function WorkspaceLayout({ children, params }: { children: ReactN
       if (!membership) { router.replace("/app"); return; }
       const { data: workspace } = await client.models.Workspace.get({ id: params.workspaceId });
       if (!workspace) { router.replace("/app"); return; }
-      setState({ name: workspace.name, role: membership.role || "pending", status: membership.status || "pending", inviteCode: workspace.inviteCode });
+      setState({ name: workspace.name, role: membership.role || "pending", status: membership.status || "pending", inviteCode: workspace.inviteCode, ownerId: workspace.ownerId });
       setLoading(false);
     }
     loadWorkspace();
