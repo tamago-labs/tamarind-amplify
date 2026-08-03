@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import type { JoinWorkspaceResult } from "./JoinWorkspaceStatusModal";
 
 interface JoinWorkspaceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (inviteCode: string) => void;
+  onSubmit: (inviteCode: string) => Promise<JoinWorkspaceResult>;
 }
 
 export default function JoinWorkspaceModal({
@@ -17,10 +18,10 @@ export default function JoinWorkspaceModal({
 }: JoinWorkspaceModalProps) {
   const [inviteCode, setInviteCode] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (inviteCode.trim()) {
-      onSubmit(inviteCode.trim());
+      await onSubmit(inviteCode.trim());
       setInviteCode("");
       onClose();
     }

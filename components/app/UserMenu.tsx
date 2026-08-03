@@ -8,8 +8,8 @@ import { useAuthenticator } from "@aws-amplify/ui-react";
 export default function UserMenu() {
   const { user, signOut } = useAuthenticator((context) => [context.user]);
   const [open, setOpen] = useState(false);
-  const identity = user?.username || user?.userId || "User";
-  const initials = identity.slice(0, 2).toUpperCase();
+  const identity = (user as any)?.signInDetails?.loginId || user?.username || user?.userId || "User";
+  const initials = /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(identity) ? "TM" : identity.replace(/@.*/, "").slice(0, 2).toUpperCase();
 
   return (
     <div className="relative">

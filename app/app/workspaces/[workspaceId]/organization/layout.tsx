@@ -26,18 +26,18 @@ export default function OrganizationLayout({ children }: { children: ReactNode }
             Members
           </Link>
           <Link
-            href={`${basePath}/settings`}
-            className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${pathname === `${basePath}/settings` ? "bg-indigo/10 text-indigo" : "text-sub hover:bg-paper hover:text-ink"}`}
-          >
-            <Settings2 size={17} />
-            Settings
-          </Link>
-          <Link
             href={`${basePath}/templates`}
             className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${pathname === `${basePath}/templates` ? "bg-indigo/10 text-indigo" : "text-sub hover:bg-paper hover:text-ink"}`}
           >
             <FileStack size={17} />
             Templates
+          </Link>
+          <Link
+            href={`${basePath}/settings`}
+            className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${pathname === `${basePath}/settings` ? "bg-indigo/10 text-indigo" : "text-sub hover:bg-paper hover:text-ink"}`}
+          >
+            <Settings2 size={17} />
+            Settings
           </Link>
         </nav>
       </aside>

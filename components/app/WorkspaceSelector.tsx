@@ -6,6 +6,7 @@ import CreateWorkspaceCard from "./CreateWorkspaceCard";
 import JoinWorkspaceCard from "./JoinWorkspaceCard";
 import CreateWorkspaceModal from "./CreateWorkspaceModal";
 import JoinWorkspaceModal from "./JoinWorkspaceModal";
+import JoinWorkspaceStatusModal, { JoinWorkspaceResult } from "./JoinWorkspaceStatusModal";
 
 interface Workspace {
   id: string;
@@ -17,7 +18,7 @@ interface WorkspaceSelectorProps {
   workspaces: Workspace[];
   onSelect: (workspaceId: string) => void;
   onCreate: (name: string, description: string) => void;
-  onJoin: (inviteCode: string) => void;
+  onJoin: (inviteCode: string) => Promise<JoinWorkspaceResult>;
 }
 
 export default function WorkspaceSelector({
@@ -28,6 +29,7 @@ export default function WorkspaceSelector({
 }: WorkspaceSelectorProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinResult, setJoinResult] = useState<JoinWorkspaceResult | null>(null);
 
   return (
     <div className="min-h-screen bg-panel flex flex-col">
@@ -70,8 +72,13 @@ export default function WorkspaceSelector({
       <JoinWorkspaceModal
         isOpen={showJoinModal}
         onClose={() => setShowJoinModal(false)}
-        onSubmit={onJoin}
+        onSubmit={async (inviteCode) => {
+          const result = await onJoin(inviteCode);
+          setJoinResult(result);
+          return result;
+        }}
       />
+      <JoinWorkspaceStatusModal result={joinResult} onClose={() => setJoinResult(null)} />
     </div>
   );
 }
