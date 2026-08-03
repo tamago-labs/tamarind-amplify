@@ -5,13 +5,13 @@ export default function Hero() {
   return (
     <section className="relative overflow-hidden">
       <div className="max-w-4xl mx-auto px-6 lg:px-10 pt-8 pb-24 lg:pt-12 lg:pb-32 text-center">
-        <h1 className="mt-6 text-3xl md:text-4xl lg:text-5xl font-semibold text-ink tracking-tight leading-[1.1]">
-          Compliant RWAs Backed by{" "}
-          <span className="text-indigo">Real Financial Operations</span>
+        <h1 className="mt-6 max-w-2xl mx-auto text-3xl md:text-4xl lg:text-5xl font-semibold text-ink tracking-tight leading-[1.1]">
+          The Web3 Payment Workspace That{" "}
+          <span className="text-indigo">Issues RWAs</span>
         </h1>
 
         <p className="mt-6 text-base md:text-lg text-sub max-w-2xl mx-auto leading-relaxed">
-          Companies manage invoices, receivables, payroll, and payments through a compliance workspace with CVI-bound identities and immutable Merkle-rooted records. Investors access CVA-verified RWAs backed by the same financial history.
+          Companies manage business payments through a compliance workspace with CVI-bound identities and immutable Merkle-rooted records. Financial partners invest in CVA-verified RWAs backed by real operations.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -32,17 +32,17 @@ export default function Hero() {
         <div className="mt-10 flex flex-col sm:flex-row sm:items-center justify-center gap-3 sm:gap-2.5 text-sm text-sub font-medium leading-relaxed">
           <span className="flex items-center gap-2">
             <ShieldCheck size={14} className="text-okgreen flex-shrink-0" />
-            Cleanverse Compliance Layer
+            Compliance at Issuance
           </span>
           <span className="hidden sm:inline text-hair">·</span>
           <span className="flex items-center gap-2">
             <ShieldCheck size={14} className="text-okgreen flex-shrink-0" />
-            15+ Chains USDC Settlement
+            Direct RWA Investment
           </span>
           <span className="hidden sm:inline text-hair">·</span>
           <span className="flex items-center gap-2">
             <ShieldCheck size={14} className="text-okgreen flex-shrink-0" />
-            RWA Origination
+            Permissioned Staking Pools
           </span>
         </div>
       </div>

@@ -6,20 +6,19 @@ import { Check } from "lucide-react";
 interface Permission {
   action: string;
   company: boolean | string;
-  payee: boolean | string;
+  counterparty: boolean | string;
   partner: boolean | string;
   investor: boolean | string;
 }
 
 const permissions: Permission[] = [
-  { action: "Manage participants", company: true, payee: false, partner: false, investor: false },
-  { action: "Payroll & payment records", company: true, payee: "View own", partner: false, investor: false },
-  { action: "Invoices & documents", company: true, payee: "View own", partner: "Permissioned", investor: false },
-  { action: "Invoice / receivable submission", company: "Create", payee: "Submit / Confirm", partner: "Review", investor: false },
-  { action: "CVI identity & tier verification", company: true, payee: true, partner: true, investor: true },
-  { action: "Merkle proof verification", company: true, payee: true, partner: true, investor: true },
-  { action: "CVA-verified RWA issuance", company: "Originate", payee: false, partner: "Review", investor: false },
-  { action: "Receivable financing (Invoice financing, Payroll financing)", company: "Connect", payee: false, partner: "Finance", investor: "Finance" },
+  { action: "Manage participants", company: true, counterparty: false, partner: false, investor: "Pool access only" },
+  { action: "Financial records", company: true, counterparty: "View own", partner: "Permissioned", investor: false },
+  { action: "Invoice submission", company: true, counterparty: "Submit / Confirm", partner: "Review", investor: false },
+  { action: "CVI identity verification", company: true, counterparty: true, partner: true, investor: true },
+  { action: "Merkle proof verification", company: true, counterparty: true, partner: true, investor: true },
+  { action: "CVA-verified RWA issuance", company: "Originate", counterparty: false, partner: "Finance & hold", investor: false },
+  { action: "Permissioned staking pools", company: false, counterparty: false, partner: "Create pool", investor: "Participate" },
 ];
 
 function CellValue({ value }: { value: boolean | string }) {
@@ -38,7 +37,7 @@ function CellValue({ value }: { value: boolean | string }) {
 
 export default function OriginationLifecycle() {
   return (
-    <section className="bg-paper">
+    <section id="how-it-works" className="bg-paper">
       <div className="max-w-5xl mx-auto px-6 lg:px-10 py-20 lg:py-28">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -48,14 +47,14 @@ export default function OriginationLifecycle() {
           className="mb-12"
         >
           <p className="font-mono text-[11px] font-medium tracking-wide text-sub uppercase mb-3">
-            Permission Model
+            How It Works
           </p>
           <h2 className="text-3xl md:text-4xl font-semibold text-ink tracking-tight leading-tight mb-4">
             The Origination{" "}
             <span className="text-indigo">Lifecycle</span>
           </h2>
           <p className="text-lg text-sub max-w-2xl leading-relaxed">
-            Every participant operates inside the same compliant workspace. Each record strengthens the history behind every RWA.
+                From compliant Web3 payments to investable RWAs. Every record is cryptographically verified and originatable on-chain.
           </p>
         </motion.div>
 
@@ -67,28 +66,32 @@ export default function OriginationLifecycle() {
           className="bg-white border border-hair rounded-xl overflow-hidden"
         >
           {/* Header */}
-          <div className="grid grid-cols-4 border-b border-ink/8">
+          <div className="grid grid-cols-5 border-b border-ink/8">
             <div className="px-6 py-4 text-sm font-medium text-ink/40">Permission Matrix</div>
             <div className="px-6 py-4 text-sm font-medium text-ink/70 text-center">Company</div>
-            <div className="px-6 py-4 text-sm font-medium text-ink/70 text-center">Payee / Payer</div>
+            <div className="px-6 py-4 text-sm font-medium text-ink/70 text-center">Counter-party</div>
             <div className="px-6 py-4 text-sm font-medium text-ink/70 text-center">Financial Partner</div>
+            <div className="px-6 py-4 text-sm font-medium text-ink/70 text-center">Pool Investor</div>
           </div>
 
           {/* Rows */}
           {permissions.map((row, i) => (
             <div
               key={row.action}
-              className={`grid grid-cols-4 ${i < permissions.length - 1 ? "border-b border-ink/5" : ""}`}
+              className={`grid grid-cols-5 ${i < permissions.length - 1 ? "border-b border-ink/5" : ""}`}
             >
               <div className="px-6 py-4 text-sm text-ink font-medium">{row.action}</div>
               <div className="px-6 py-4 flex items-center justify-center">
                 <CellValue value={row.company} />
               </div>
               <div className="px-6 py-4 flex items-center justify-center">
-                <CellValue value={row.payee} />
+                <CellValue value={row.counterparty} />
               </div>
               <div className="px-6 py-4 flex items-center justify-center">
                 <CellValue value={row.partner} />
+              </div>
+              <div className="px-6 py-4 flex items-center justify-center">
+                <CellValue value={row.investor} />
               </div>
             </div>
           ))}

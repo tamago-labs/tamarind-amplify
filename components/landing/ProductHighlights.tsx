@@ -7,7 +7,7 @@ const SUBSECTION_1_BULLETS = [
   "Payroll, contractor & vendor records",
   "Invoice & receivable tracking",
   "Merkle-rooted financial records",
-  "On-chain settlement, every transaction",
+  "Programmable compliance rules",
 ];
 
 const SUBSECTION_2_BULLETS = [
@@ -25,10 +25,10 @@ const SUBSECTION_3_BULLETS = [
 ];
 
 const SUBSECTION_4_BULLETS = [
-  "Payroll receivable pools",
-  "Invoice financing",
-  "Revenue-backed assets",
-  "Investor access & distributions",
+  "Company-originated ERC-20 tokens",
+  "Fixed interest with maturity dates",
+  "Partner-curated permissioned pools",
+  "Risk-rated investment tiers",
 ];
 
 export default function ProductHighlights() {
@@ -48,7 +48,7 @@ export default function ProductHighlights() {
                 <span className="text-indigo">Compliance</span> Workspace
               </h2>
               <p className="text-lg text-sub leading-relaxed mb-6">
-                Run payroll, contractor payments, invoices, and treasury from a single workspace. Every financial record is compliance-ready, cryptographically verifiable, and settled on-chain.
+                Design payment workflows visually with drag-and-drop. From payroll to invoicing, every transaction is compliance-ready, cryptographically verifiable, and originatable as an RWA.
               </p>
               <ul className="space-y-3">
                 {SUBSECTION_1_BULLETS.map((bullet) => (
@@ -80,7 +80,7 @@ export default function ProductHighlights() {
         </div>
       </section>
 
-      {/* Subsection #2: Verified Identity Layer */}
+      {/* Subsection #2: Verified Identity */}
       <section className="bg-panel">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-20 lg:py-28">
           <div className="grid lg:grid-cols-[1.1fr_1fr] gap-12 items-center">
@@ -108,7 +108,7 @@ export default function ProductHighlights() {
               className="order-1 lg:order-2"
             >
               <h2 className="text-3xl md:text-4xl font-semibold text-ink tracking-tight leading-tight mb-4">
-                <span className="text-indigo">Verified Identity</span> Layer
+                <span className="text-indigo">Verified</span> Identity
               </h2>
               <p className="text-lg text-sub leading-relaxed mb-6">
                 Every wallet on Tamarind carries a CVI-bound identity — verified once, enforced everywhere. Travel Rule data travels with the transaction, not around it.
@@ -128,7 +128,7 @@ export default function ProductHighlights() {
         </div>
       </section>
 
-      {/* Subsection #3: Programmable Issuance */}
+      {/* Subsection #3: RWA Origination */}
       <section className="bg-paper">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-20 lg:py-28">
           <div className="grid lg:grid-cols-[1fr_1.1fr] gap-12 items-center">
@@ -139,10 +139,10 @@ export default function ProductHighlights() {
               transition={{ duration: 0.4 }}
             >
               <h2 className="text-3xl md:text-4xl font-semibold text-ink tracking-tight leading-tight mb-4">
-                <span className="text-indigo">Programmable</span> Issuance
+                <span className="text-indigo">RWA</span> Origination
               </h2>
               <p className="text-lg text-sub leading-relaxed mb-6">
-                RWAs are issued with eligibility built into the asset itself. Only wallets with the required CVI tier can hold or receive them — every other transfer fails by design.
+                Run your payment operations as usual. When receivables are waiting for settlement, tokenize them into compliant RWAs. No paperwork, no delays, just verifiable history backing every asset.
               </p>
               <ul className="space-y-3">
                 {SUBSECTION_3_BULLETS.map((bullet) => (
@@ -205,7 +205,7 @@ export default function ProductHighlights() {
                 <span className="text-indigo">RWA</span> Marketplace
               </h2>
               <p className="text-lg text-sub leading-relaxed mb-6">
-                Investors with the required CVI tier access payroll, invoice, and receivable RWAs originated directly from verified company operations — no reconstructed evidence, just provable history.
+                Access company-originated RWAs as ERC-20 tokens with fixed interest, or invest through partner-curated permissioned pools for diversified exposure.
               </p>
               <ul className="space-y-3">
                 {SUBSECTION_4_BULLETS.map((bullet) => (

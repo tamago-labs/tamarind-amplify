@@ -19,16 +19,16 @@ export default function Footer() {
           <div className="col-span-2 lg:col-span-1">
             <Brand />
             <p className="mt-4 text-sm text-sub max-w-xs leading-relaxed">
-              Compliance infrastructure for programmable finance. Manage records, verify identities, and originate compliant RWAs.
+              The Web3 payment workspace for RWA origination. Run compliant payments, verify records, and invest in tokenized assets.
             </p>
           </div>
 
           <FooterCol
             title="Product"
             links={[
-              { href: "#features", label: "Features" },
+              { href: "/explore", label: "RWA Explorer" },
               { href: "#supported-chains", label: "Supported Chains" },
-              { href: "#flow", label: "How it works" },
+              { href: "#how-it-works", label: "How it works" },
             ]}
           />
           <FooterCol

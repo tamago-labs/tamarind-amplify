@@ -42,10 +42,10 @@ export default function SupportedChains() {
           </p>
           <h2 className="text-3xl md:text-4xl font-semibold text-ink tracking-tight leading-tight mb-4">
             Available on{" "}
-            <span className="text-indigo">23+ Chains</span><span className="text-indigo text-lg align-super">*</span>
+            <span className="text-indigo">20+ Chains</span><span className="text-indigo text-lg align-super">*</span>
           </h2>
           <p className="text-lg text-sub max-w-2xl leading-relaxed mb-10">
-            USDC settles the same way everywhere you operate — powered by Circle App Kit. Every settlement is verifiable on the chain it happened on.
+            Send and receive USDC on any supported network. Cross-chain transfers powered by Circle Gateway — same asset, instant settlement.
           </p>
 
           <div className="flex flex-wrap justify-center gap-4">
@@ -69,11 +69,9 @@ export default function SupportedChains() {
 
           <div className="mt-8 flex items-center justify-center gap-2 text-sm">
             <span className="text-sub">*Now available on testnet during Alpha:</span>
-            <span className="font-medium text-ink">Monad Testnet</span>
-            <span className="text-hair">·</span>
             <span className="font-medium text-ink">Base Sepolia</span>
             <span className="text-hair">·</span>
-            <span className="font-medium text-ink">Ethereum Sepolia</span>
+            <span className="font-medium text-ink">Monad Testnet</span>
           </div>
         </motion.div>
       </div>

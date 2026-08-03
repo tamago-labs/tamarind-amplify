@@ -17,19 +17,19 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tamarind — Compliance Infrastructure for Programmable Finance",
+  title: "Tamarind — The Web3 Payment Workspace for RWA Origination",
   description:
-    "Tamarind is compliance infrastructure for programmable finance. Manage payroll, invoices, and financial records in one workspace, then convert verified obligations into compliant RWAs for settlement and financing.",
+    "The Web3 payment workspace for RWA origination. Run compliant payments, verify records with CVI and Merkle proof, and invest in CVA-verified RWAs as ERC-20 tokens.",
   keywords: [
-    "Compliance Infrastructure",
-    "Programmable Finance",
+    "Web3 Payments",
     "RWA Origination",
+    "ERC-20 Tokens",
     "CVI",
     "CVA",
     "Cleanverse",
-    "Financial Records",
     "Merkle Proof",
-    "On-Chain Settlement",
+    "Compliant Payments",
+    "Staking Pools",
     "Digital Assets",
   ],
 };
