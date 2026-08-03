@@ -1,4 +1,21 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { cleanverseIdentity } from "../functions/cleanverseIdentity/resource.js";
+
+const apassStatus = a.customType({
+  walletAddress: a.string(),
+  chain: a.string(),
+  cvRecordId: a.string(),
+  tier: a.string(),
+  subTier: a.integer(),
+  group: a.string(),
+  subGroup: a.string(),
+  countries: a.string().array(),
+  expirationTime: a.integer(),
+  currentKycHash: a.string(),
+  cleanverseStatus: a.integer(),
+  internalStatus: a.string(),
+  ownershipVerified: a.boolean(),
+});
 
 const schema = a.schema({
   UserProfile: a
@@ -36,6 +53,72 @@ const schema = a.schema({
     .authorization((allow) => [
       allow.authenticated(),
     ]),
+
+  WalletIdentity: a
+    .model({
+      userId: a.string().required(),
+      walletAddress: a.string().required(),
+      chain: a.string().required(),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  WorkspaceIdentity: a
+    .model({
+      workspaceId: a.id().required(),
+      userId: a.string().required(),
+      walletIdentityId: a.id().required(),
+      internalStatus: a.enum(["pending", "active", "needsReview", "suspended", "archived"]),
+      statusNote: a.string(),
+      statusUpdatedAt: a.datetime(),
+      statusUpdatedBy: a.string(),
+      ownershipMessage: a.string(),
+      ownershipSignature: a.string(),
+      ownershipVerifiedAt: a.datetime(),
+      ownershipVerifiedBy: a.string(),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  queryApass: a
+    .query()
+    .arguments({
+      workspaceId: a.id().required(),
+      workspaceIdentityId: a.id().required(),
+    })
+    .returns(apassStatus)
+    .handler(a.handler.function(cleanverseIdentity))
+    .authorization((allow) => [allow.authenticated()]),
+
+  generateApass: a
+    .mutation()
+    .arguments({
+      workspaceId: a.id().required(),
+      walletAddress: a.string().required(),
+      chain: a.string().required(),
+      ownershipMessage: a.string().required(),
+      ownershipSignature: a.string().required(),
+    })
+    .returns(apassStatus)
+    .handler(a.handler.function(cleanverseIdentity))
+    .authorization((allow) => [allow.authenticated()]),
+
+  updateWalletIdentityStatus: a
+    .mutation()
+    .arguments({
+      workspaceId: a.id().required(),
+      workspaceIdentityId: a.id().required(),
+      internalStatus: a.enum(["pending", "active", "needsReview", "suspended", "archived"]),
+      statusNote: a.string(),
+    })
+    .returns(a.customType({ success: a.boolean().required(), statusUpdatedAt: a.datetime() }))
+    .handler(a.handler.function(cleanverseIdentity))
+    .authorization((allow) => [allow.authenticated()]),
+
+  verifyWalletIdentity: a
+    .mutation()
+    .arguments({ workspaceId: a.id().required(), workspaceIdentityId: a.id().required() })
+    .returns(a.customType({ success: a.boolean().required(), verifiedAt: a.datetime() }))
+    .handler(a.handler.function(cleanverseIdentity))
+    .authorization((allow) => [allow.authenticated()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
