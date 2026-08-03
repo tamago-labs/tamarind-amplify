@@ -78,6 +78,12 @@ Four roles power the flow from company operations to investor capital:
 
 ---
 
+## Financial Partner and Pool Model
+
+Tamarind separates receivable origination from passive investment. The Company runs payroll, invoicing, and payments, then issues a receivable backed by Merkle-rooted, CVI-verified history. The Financial Partner reviews and underwrites that receivable, buys it directly from the Company, and manages the investor pool. The Pool Investor stakes capital into the partner's permissioned pool and earns yield without selecting individual receivables.
+
+---
+
 ## Compliance Layer (Powered by Cleanverse)
 
 Tamarind is built on Cleanverse's compliance infrastructure:

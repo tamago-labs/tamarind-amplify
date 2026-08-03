@@ -63,7 +63,7 @@ export default function RealWorldExample() {
               Getting Financed, on Tamarind
             </h3>
             <p className="text-sm text-sub leading-relaxed">
-              That same company has been invoicing and running payroll on Tamarind for three months. Every invoice and payslip is already Merkle-rooted and CVI-verified. When they need capital, they don&apos;t gather anything — they originate an invoice receivable directly from their existing history. A financial partner reviews it the same day.
+               That same company has been invoicing and running payroll on Tamarind for three months. Every invoice and payslip is already Merkle-rooted and CVI-verified. When they need capital, they don&apos;t gather anything — they originate an invoice receivable directly from their existing history. A Financial Partner reviews it the same day, then either finances it directly or places it into the partner&apos;s permissioned pool.
             </p>
           </motion.div>
         </div>

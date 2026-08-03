@@ -21,14 +21,14 @@ const SUBSECTION_3_BULLETS = [
   "CVA-verified RWA issuance",
   "Tier-gated holding & transfer rules",
   "Non-compliant transfers rejected automatically",
-  "Payroll, invoice & receivable origination",
+  "Invoice receivable origination backed by verified payment history",
 ];
 
 const SUBSECTION_4_BULLETS = [
-  "Company-originated ERC-20 tokens",
-  "Fixed interest with maturity dates",
-  "Partner-curated permissioned pools",
-  "Risk-rated investment tiers",
+  "Direct financing by Financial Partners",
+  "One permissioned pool per Financial Partner",
+  "Pool Investor staking without receivable selection",
+  "Partner-defined pool terms and eligibility",
 ];
 
 export default function ProductHighlights() {
@@ -205,7 +205,7 @@ export default function ProductHighlights() {
                 <span className="text-indigo">RWA</span> Marketplace
               </h2>
               <p className="text-lg text-sub leading-relaxed mb-6">
-                Access company-originated RWAs as ERC-20 tokens with fixed interest, or invest through partner-curated permissioned pools for diversified exposure.
+                Financial Partners can finance receivables directly or aggregate underwritten receivables into their own permissioned pool. Pool Investors stake into a selected partner pool without choosing individual receivables.
               </p>
               <ul className="space-y-3">
                 {SUBSECTION_4_BULLETS.map((bullet) => (

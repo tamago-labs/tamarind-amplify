@@ -27,7 +27,7 @@ const steps: Step[] = [
   {
     num: "04",
     title: "Finance",
-    body: "Tier-eligible investors access the marketplace, evaluate origination history directly, and finance receivables without reconstructed evidence.",
+    body: "Financial Partners either finance receivables directly or underwrite them into a permissioned pool. Pool Investors stake into a selected partner pool without choosing individual receivables.",
   },
 ];
 

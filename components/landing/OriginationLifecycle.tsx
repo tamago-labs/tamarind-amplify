@@ -13,12 +13,12 @@ interface Permission {
 
 const permissions: Permission[] = [
   { action: "Manage participants", company: true, counterparty: false, partner: false, investor: "Pool access only" },
-  { action: "Financial records", company: true, counterparty: "View own", partner: "Permissioned", investor: false },
-  { action: "Invoice submission", company: true, counterparty: "Submit / Confirm", partner: "Review", investor: false },
+  { action: "Financial records", company: true, counterparty: "View own", partner: "Permissioned review", investor: false },
+  { action: "Invoice submission", company: true, counterparty: "Submit / Confirm", partner: "Review / Underwrite", investor: false },
   { action: "CVI identity verification", company: true, counterparty: true, partner: true, investor: true },
   { action: "Merkle proof verification", company: true, counterparty: true, partner: true, investor: true },
-  { action: "CVA-verified RWA issuance", company: "Originate", counterparty: false, partner: "Finance & hold", investor: false },
-  { action: "Permissioned staking pools", company: false, counterparty: false, partner: "Create pool", investor: "Participate" },
+  { action: "CVA-verified RWA issuance", company: "Originate", counterparty: false, partner: "Purchase directly or pool", investor: false },
+  { action: "Permissioned staking pools", company: false, counterparty: false, partner: "Create & manage", investor: "Stake into selected pool" },
 ];
 
 function CellValue({ value }: { value: boolean | string }) {
