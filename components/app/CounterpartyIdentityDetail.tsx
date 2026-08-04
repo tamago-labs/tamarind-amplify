@@ -8,7 +8,7 @@ import type { Schema } from "@/amplify/data/resource";
 
 const client = generateClient<Schema>();
 function dateLabel(value?: number | null) { return value ? new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value * 1000)) : "Not available"; }
-function chainLabel(chain?: string | null) { return chain === "ethereum" ? "Ethereum Sepolia" : chain === "monad" ? "Monad Testnet" : "Base Sepolia"; }
+function chainLabel(chain?: string | null) { return chain === "monad" ? "Monad Testnet" : "Base Sepolia"; }
 function countryFlag(code?: string | null) { return code && code.length === 2 ? String.fromCodePoint(...code.toUpperCase().split("").map((char) => 127397 + char.charCodeAt(0))) : ""; }
 
 export default function CounterpartyIdentityDetail() {

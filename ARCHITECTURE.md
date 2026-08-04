@@ -138,7 +138,6 @@ The workspace layout loads the membership and role before rendering the dashboar
 - Payments
 - Invoices
 - Proof Explorer
-- Knowledge Base
 - Receivable
 - Organization
 
@@ -149,7 +148,6 @@ The workspace layout loads the membership and role before rendering the dashboar
 - Payments
 - Invoices
 - Proof Explorer
-- Knowledge Base
 
 ### Partner
 
@@ -158,7 +156,6 @@ The workspace layout loads the membership and role before rendering the dashboar
 - Due Diligence
 - Identity
 - Proof Explorer
-- Knowledge Base
 
 Company and Admin share the same operational view, but only workspace administrators and company members can manage organization records.
 
@@ -224,7 +221,6 @@ RainbowKit provides the wallet connection UI. Wagmi manages wallet state and net
 Current wallet networks:
 
 - Base Sepolia
-- Ethereum Sepolia
 - Monad Testnet
 
 The wallet menu provides:

@@ -4,16 +4,16 @@ import { useEffect, useState } from "react";
 import { generateClient } from "aws-amplify/data";
 import { useAccount, useSignMessage } from "wagmi";
 import { useParams } from "next/navigation";
-import { baseSepolia, sepolia } from "viem/chains";
+import { baseSepolia } from "viem/chains";
 import { FileCheck2, Plus, RefreshCw } from "lucide-react";
 import type { Schema } from "@/amplify/data/resource";
 import { monadTestnet } from "@/lib/wagmi";
 
 const client = generateClient<Schema>();
-const networks = [{ id: baseSepolia.id, label: "Base Sepolia", slug: "base" }, { id: sepolia.id, label: "Ethereum Sepolia", slug: "ethereum" }, { id: monadTestnet.id, label: "Monad Testnet", slug: "monad" }];
+const networks = [{ id: baseSepolia.id, label: "Base Sepolia", slug: "base" }, { id: monadTestnet.id, label: "Monad Testnet", slug: "monad" }];
 
 function dateLabel(value?: number | null) { return value ? new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value * 1000)) : "Not available"; }
-function chainLabel(chain?: string | null) { return chain === "ethereum" ? "Ethereum Sepolia" : chain === "monad" ? "Monad Testnet" : "Base Sepolia"; }
+function chainLabel(chain?: string | null) { return chain === "monad" ? "Monad Testnet" : "Base Sepolia"; }
 function flag(code?: string | null) { return code && code.length === 2 ? String.fromCodePoint(...code.toUpperCase().split("").map((char) => 127397 + char.charCodeAt(0))) : ""; }
 
 export default function KybPage() {

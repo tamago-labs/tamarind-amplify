@@ -9,7 +9,7 @@ import { useAccount, useBalance, useDisconnect } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useChainId, useSwitchChain } from "wagmi";
 import { networkIcons } from "@web3icons/react";
-import { baseSepolia, sepolia } from "viem/chains";
+import { baseSepolia } from "viem/chains";
 import { monadTestnet } from "@/lib/wagmi";
 import { formatUnits } from "viem";
 import { fetchUserAttributes } from "aws-amplify/auth";
@@ -21,11 +21,10 @@ const client = generateClient<Schema>();
 
 const networks = [
   { id: baseSepolia.id, label: "Base Sepolia", icon: networkIcons.NetworkBase },
-  { id: sepolia.id, label: "Ethereum Sepolia", icon: networkIcons.NetworkEthereum },
   { id: monadTestnet.id, label: "Monad Testnet", icon: networkIcons.NetworkMonad },
 ];
 
-export default function UserMenu() {
+export default function UserMenu({ role }: { role: string }) {
   const { user, signOut } = useAuthenticator((context) => [context.user]);
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
@@ -117,7 +116,7 @@ export default function UserMenu() {
         </motion.div>
       )}
       </AnimatePresence>
-      <EditProfileModal isOpen={editProfile} userId={userId} initialValues={{ displayName: profile.displayName }} onClose={() => setEditProfile(false)} onSaved={(values) => setProfile({ ...profile, ...values })} />
+      <EditProfileModal role={role} isOpen={editProfile} userId={userId} initialValues={{ displayName: profile.displayName }} onClose={() => setEditProfile(false)} onSaved={(values) => setProfile({ ...profile, ...values })} />
     </div>
   );
 }

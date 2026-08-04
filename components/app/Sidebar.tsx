@@ -45,7 +45,6 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "payments", label: "Payments", icon: "payments" },
     { page: "invoices", label: "Invoices", icon: "invoices" },
     { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
-    { page: "knowledge-base", label: "Knowledge Base", icon: "knowledge" },
     { page: "receivable", label: "Receivable", icon: "receivable" },
     { page: "organization-members", label: "Organization", icon: "organization" },
   ],
@@ -56,7 +55,6 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "payments", label: "Payments", icon: "payments" },
     { page: "invoices", label: "Invoices", icon: "invoices" },
     { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
-    { page: "knowledge-base", label: "Knowledge Base", icon: "knowledge" },
     { page: "receivable", label: "Receivable", icon: "receivable" },
     { page: "organization-members", label: "Organization", icon: "organization" },
   ],
@@ -66,7 +64,6 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "payments", label: "Payments", icon: "payments" },
     { page: "invoices", label: "Invoices", icon: "invoices" },
     { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
-    { page: "knowledge-base", label: "Knowledge Base", icon: "knowledge" },
   ],
   partner: [
     { page: "overview", label: "Overview", icon: "overview" },
@@ -74,7 +71,6 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "due-diligence", label: "Due Diligence", icon: "dueDiligence" },
     { page: "identity", label: "Identity", icon: "identity" },
     { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
-    { page: "knowledge-base", label: "Knowledge Base", icon: "knowledge" },
   ],
 };
 

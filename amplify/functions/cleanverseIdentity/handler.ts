@@ -11,7 +11,7 @@ Amplify.configure(resourceConfig, libraryOptions);
 const client = generateClient<Schema>();
 const IV = Buffer.alloc(16, 0);
 const ONE_YEAR_SECONDS = 365 * 24 * 60 * 60;
-const chainSlugs = new Set(["base", "ethereum", "monad"]);
+const chainSlugs = new Set(["base", "monad"]);
 
 type Identity = { sub?: string; username?: string } | undefined;
 

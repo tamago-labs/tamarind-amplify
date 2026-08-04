@@ -1,4 +1,4 @@
-import { baseSepolia, sepolia } from "viem/chains";
+import { baseSepolia } from "viem/chains";
 import { defineChain } from "viem";
 import { createConfig, http, injected } from "wagmi";
 
@@ -14,11 +14,10 @@ export const monadTestnet = defineChain({
 });
 
 export const config = createConfig({
-  chains: [baseSepolia, sepolia, monadTestnet],
+  chains: [baseSepolia, monadTestnet],
   connectors: [injected()],
   transports: {
     [baseSepolia.id]: http(alchemyKey ? `https://base-sepolia.g.alchemy.com/v2/${alchemyKey}` : "https://sepolia.base.org"),
-    [sepolia.id]: http(alchemyKey ? `https://eth-sepolia.g.alchemy.com/v2/${alchemyKey}` : "https://rpc.sepolia.org"),
     [monadTestnet.id]: http("https://testnet-rpc.monad.xyz"),
   },
   ssr: true,

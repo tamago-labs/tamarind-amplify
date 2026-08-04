@@ -5,13 +5,13 @@ import PlaceholderPage from "@/components/app/PlaceholderPage";
 import { useWorkspace } from "@/components/app/WorkspaceContext";
 
 const titles: Record<string, string> = {
-  workflows: "Workflows", identities: "Identities", payments: "Payments", invoices: "Invoices", "proof-explorer": "Proof Explorer", "knowledge-base": "Knowledge Base", receivable: "Receivable", identity: "Identity", "available-receivables": "Available Receivables", "due-diligence": "Due Diligence",
+  workflows: "Workflows", identities: "Identities", payments: "Payments", invoices: "Invoices", "proof-explorer": "Proof Explorer", receivable: "Receivable", identity: "Identity", "available-receivables": "Available Receivables", "due-diligence": "Due Diligence",
 };
 const pagesByRole: Record<string, string[]> = {
-  admin: ["workflows", "identities", "payments", "invoices", "proof-explorer", "knowledge-base", "receivable"],
-  company: ["workflows", "identities", "payments", "invoices", "proof-explorer", "knowledge-base", "receivable"],
-  counterParty: ["identity", "payments", "invoices", "proof-explorer", "knowledge-base"],
-  partner: ["available-receivables", "due-diligence", "identity", "proof-explorer", "knowledge-base"],
+  admin: ["workflows", "identities", "payments", "invoices", "proof-explorer", "receivable"],
+  company: ["workflows", "identities", "payments", "invoices", "proof-explorer", "receivable"],
+  counterParty: ["identity", "payments", "invoices", "proof-explorer"],
+  partner: ["available-receivables", "due-diligence", "identity", "proof-explorer"],
 };
 
 export default function WorkspacePlaceholderPage() {

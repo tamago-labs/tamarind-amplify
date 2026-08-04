@@ -35,9 +35,8 @@ export default function AppLayout({
             <span className="text-sm font-semibold text-ink">{workspaceName}</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden rounded-full bg-indigo/10 px-2.5 py-1 text-xs font-medium capitalize text-indigo sm:inline-flex">{role}</span>
             {role === "admin" && <InvitePopover inviteCode={inviteCode} />}
-            <UserMenu />
+            <UserMenu role={role} />
           </div>
         </header>
 

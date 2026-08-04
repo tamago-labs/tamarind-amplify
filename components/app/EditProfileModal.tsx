@@ -13,12 +13,14 @@ interface ProfileValues {
 
 export default function EditProfileModal({
   isOpen,
+  role,
   userId,
   initialValues,
   onClose,
   onSaved,
 }: {
   isOpen: boolean;
+  role: string;
   userId: string;
   initialValues: ProfileValues;
   onClose: () => void;
@@ -63,7 +65,7 @@ export default function EditProfileModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 px-6" role="dialog" aria-modal="true" aria-labelledby="edit-profile-title">
       <div className="w-full max-w-md rounded-2xl border border-hair bg-panel shadow-xl">
         <div className="flex items-center justify-between border-b border-hair px-6 py-4">
-          <h2 id="edit-profile-title" className="text-lg font-semibold text-ink">Edit profile</h2>
+          <div><h2 id="edit-profile-title" className="text-lg font-semibold text-ink">Edit profile</h2><span className="mt-2 inline-flex rounded-full bg-indigo/10 px-2.5 py-1 text-xs font-medium capitalize text-indigo">{role}</span></div>
           <button onClick={onClose} className="p-1 text-sub hover:text-ink" aria-label="Close dialog"><X size={18} /></button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-5 p-6">

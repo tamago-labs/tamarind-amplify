@@ -59,8 +59,6 @@ export default function SupportedChains() {
             <span className="text-sub">*Now available on testnet during Alpha:</span>
             <span className="font-medium text-ink">Base Sepolia</span>
             <span className="text-hair">·</span>
-            <span className="font-medium text-ink">Ethereum Sepolia</span>
-            <span className="text-hair">·</span>
             <span className="font-medium text-ink">Monad Testnet</span>
           </div>
         </motion.div>

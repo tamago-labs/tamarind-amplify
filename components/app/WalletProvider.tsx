@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useAccount, useWalletClient } from "wagmi";
 import { createViemAdapterFromProvider } from "@circle-fin/adapter-viem-v2";
-import { BaseSepolia, EthereumSepolia } from "@circle-fin/app-kit/chains";
+import { BaseSepolia } from "@circle-fin/app-kit/chains";
 
 interface WalletState {
   adapter: unknown | null;
@@ -32,7 +32,7 @@ export default function WalletProvider({ children }: { children: ReactNode }) {
       try {
         const nextAdapter = await createViemAdapterFromProvider({
           provider: walletClient as never,
-          capabilities: { supportedChains: [BaseSepolia, EthereumSepolia] },
+          capabilities: { supportedChains: [BaseSepolia] },
         });
         setAdapter(nextAdapter);
       } catch (error) {

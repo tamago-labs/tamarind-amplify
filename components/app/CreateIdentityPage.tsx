@@ -5,13 +5,13 @@ import { useAuthenticator } from "@aws-amplify/ui-react";
 import { generateClient } from "aws-amplify/data";
 import { useAccount, useSignMessage } from "wagmi";
 import { useParams, useRouter } from "next/navigation";
-import { baseSepolia, sepolia } from "viem/chains";
+import { baseSepolia } from "viem/chains";
 import { ArrowLeft, CheckCircle2, Upload } from "lucide-react";
 import type { Schema } from "@/amplify/data/resource";
 import { monadTestnet } from "@/lib/wagmi";
 
 const client = generateClient<Schema>();
-const networks = [{ id: baseSepolia.id, label: "Base Sepolia", slug: "base" }, { id: sepolia.id, label: "Ethereum Sepolia", slug: "ethereum" }, { id: monadTestnet.id, label: "Monad Testnet", slug: "monad" }];
+const networks = [{ id: baseSepolia.id, label: "Base Sepolia", slug: "base" }, { id: monadTestnet.id, label: "Monad Testnet", slug: "monad" }];
 const countries = [["US", "United States"], ["SG", "Singapore"], ["JP", "Japan"], ["TH", "Thailand"], ["GB", "United Kingdom"], ["AU", "Australia"], ["CA", "Canada"], ["DE", "Germany"], ["FR", "France"], ["IN", "India"], ["HK", "Hong Kong"], ["CN", "China"], ["KR", "South Korea"], ["MY", "Malaysia"], ["ID", "Indonesia"], ["VN", "Vietnam"]];
 
 export default function CreateIdentityPage() {
