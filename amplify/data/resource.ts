@@ -119,7 +119,7 @@ const schema = a.schema({
     .returns(a.customType({ success: a.boolean().required(), verifiedAt: a.datetime() }))
     .handler(a.handler.function(cleanverseIdentity))
     .authorization((allow) => [allow.authenticated()]),
-});
+}).authorization((allow) => [allow.resource(cleanverseIdentity)]);
 
 export type Schema = ClientSchema<typeof schema>;
 
