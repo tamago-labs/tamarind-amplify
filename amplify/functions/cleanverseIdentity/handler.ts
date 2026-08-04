@@ -71,9 +71,21 @@ async function canManage(workspaceId: string, userId: string) {
   return member;
 }
 
+async function workspaceIdentityFor(id: string) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const { data: identity } = await client.models.WorkspaceIdentity.get({ id });
+    if (identity) return identity;
+    if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+  }
+  return null;
+}
+
 async function queryIdentity(workspaceIdentityId: string, actor: string, workspaceId: string) {
-  const { data: workspaceIdentity } = await client.models.WorkspaceIdentity.get({ id: workspaceIdentityId });
-  if (!workspaceIdentity || workspaceIdentity.workspaceId !== workspaceId) throw new Error("Identity not found");
+  const workspaceIdentity = await workspaceIdentityFor(workspaceIdentityId);
+  if (!workspaceIdentity || workspaceIdentity.workspaceId !== workspaceId) {
+    console.error("Workspace identity lookup failed", { workspaceIdentityId, workspaceId, actor });
+    throw new Error("Identity not found");
+  }
   if (workspaceIdentity.userId !== actor) await canManage(workspaceId, actor);
   const { data: identity } = await client.models.WalletIdentity.get({ id: workspaceIdentity.walletIdentityId });
   if (!identity) throw new Error("Wallet identity not found");
@@ -126,12 +138,20 @@ export const handler = async (event: IdentityEvent) => {
         expirationTime: Math.floor(Date.now() / 1000) + ONE_YEAR_SECONDS,
         wallet: { address: args.walletAddress, chain },
       }, true);
-      await client.models.WalletIdentity.create({ id: walletIdentityId, userId: actor, walletAddress: args.walletAddress, chain });
+      const { errors: walletErrors } = await client.models.WalletIdentity.create({ id: walletIdentityId, userId: actor, walletAddress: args.walletAddress, chain });
+      if (walletErrors?.length) {
+        console.error("Wallet identity persistence failed after Cleanverse issuance", walletErrors);
+        throw new Error(walletErrors[0].message);
+      }
     }
     const workspaceIdentityId = workspaceIdentityIdFor(args.workspaceId, walletIdentityId);
     const { data: existingLink } = await client.models.WorkspaceIdentity.get({ id: workspaceIdentityId });
-    if (existingLink) throw new Error("This identity is already connected to the workspace");
-    await client.models.WorkspaceIdentity.create({ id: workspaceIdentityId, workspaceId: args.workspaceId, userId: actor, walletIdentityId, internalStatus: "pending", ownershipMessage: args.ownershipMessage, ownershipSignature: args.ownershipSignature });
+    if (existingLink) return queryIdentity(workspaceIdentityId, actor, args.workspaceId);
+    const { errors: linkErrors } = await client.models.WorkspaceIdentity.create({ id: workspaceIdentityId, workspaceId: args.workspaceId, userId: actor, walletIdentityId, internalStatus: "pending", ownershipMessage: args.ownershipMessage, ownershipSignature: args.ownershipSignature });
+    if (linkErrors?.length) {
+      console.error("Workspace identity persistence failed after Cleanverse issuance", linkErrors);
+      throw new Error(linkErrors[0].message);
+    }
     return queryIdentity(workspaceIdentityId, actor, args.workspaceId);
   }
 
@@ -139,7 +159,7 @@ export const handler = async (event: IdentityEvent) => {
 
   if (fieldName === "updateWalletIdentityStatus") {
     await canManage(args.workspaceId, actor);
-    const { data: identity } = await client.models.WorkspaceIdentity.get({ id: args.workspaceIdentityId });
+    const identity = await workspaceIdentityFor(args.workspaceIdentityId);
     if (!identity || identity.workspaceId !== args.workspaceId) throw new Error("Identity not found");
     const now = new Date().toISOString();
     const { data: updated } = await client.models.WorkspaceIdentity.update({ id: args.workspaceIdentityId, internalStatus: args.internalStatus, statusNote: args.statusNote, statusUpdatedAt: now, statusUpdatedBy: actor });
@@ -148,7 +168,7 @@ export const handler = async (event: IdentityEvent) => {
 
   if (fieldName === "verifyWalletIdentity") {
     await canManage(args.workspaceId, actor);
-    const { data: identity } = await client.models.WorkspaceIdentity.get({ id: args.workspaceIdentityId });
+    const identity = await workspaceIdentityFor(args.workspaceIdentityId);
     if (!identity || identity.workspaceId !== args.workspaceId) throw new Error("Identity not found");
     const now = new Date().toISOString();
     const { data: updated } = await client.models.WorkspaceIdentity.update({ id: args.workspaceIdentityId, ownershipVerifiedAt: now, ownershipVerifiedBy: actor });
