@@ -10,6 +10,7 @@ Amplify.configure(resourceConfig, libraryOptions);
 
 const client = generateClient<Schema>();
 const IV = Buffer.alloc(16, 0);
+const ONE_YEAR_SECONDS = 365 * 24 * 60 * 60;
 const chainSlugs = new Set(["base", "ethereum", "monad"]);
 
 type Identity = { sub?: string; username?: string } | undefined;
@@ -24,12 +25,20 @@ function customerIdFor(userId: string) {
   return `TAMARIND${crypto.createHash("sha256").update(userId).digest("hex").slice(0, 24).toUpperCase()}`;
 }
 
+function organizationCustomerIdFor(workspaceId: string) {
+  return `TAMARINDORG${crypto.createHash("sha256").update(workspaceId).digest("hex").slice(0, 22).toUpperCase()}`;
+}
+
 function identityIdFor(userId: string, chain: string) {
   return crypto.createHash("sha256").update(`${userId}:${chain}`).digest("hex");
 }
 
 function workspaceIdentityIdFor(workspaceId: string, walletIdentityId: string) {
   return crypto.createHash("sha256").update(`${workspaceId}:${walletIdentityId}`).digest("hex");
+}
+
+function organizationIdentityIdFor(workspaceId: string, chain: string) {
+  return crypto.createHash("sha256").update(`${workspaceId}:${chain}`).digest("hex");
 }
 
 function normalizeChain(chain: string) {
@@ -86,6 +95,23 @@ async function workspaceIdentityFor(id: string) {
   return null;
 }
 
+async function organizationIdentityFor(id: string) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const { data: identity } = await client.models.OrganizationIdentity.get({ id });
+    if (identity) return identity;
+    if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+  }
+  return null;
+}
+
+async function queryOrganizationIdentity(organizationIdentityId: string, actor: string, workspaceId: string) {
+  const identity = await organizationIdentityFor(organizationIdentityId);
+  if (!identity || identity.workspaceId !== workspaceId) throw new Error("Company identity not found");
+  await canManage(workspaceId, actor);
+  const result = await cleanverseRequest<{ cvRecordId?: string; tier?: string; subTier?: number; group?: string; subGroup?: string; countries?: string[]; expirationTime?: number; currentKycHash?: string; status?: number }>("/query_apass", { chain: identity.chain, address: identity.walletAddress });
+  return { workspaceIdentityId: identity.id, walletAddress: identity.walletAddress, chain: identity.chain, cvRecordId: result.data?.cvRecordId, tier: result.data?.tier, subTier: result.data?.subTier, group: result.data?.group, subGroup: result.data?.subGroup, countries: result.data?.countries || [], expirationTime: result.data?.expirationTime, currentKycHash: result.data?.currentKycHash, cleanverseStatus: result.data?.status, internalStatus: identity.internalStatus || "pending", ownershipVerified: Boolean(identity.ownershipVerifiedAt) };
+}
+
 async function queryIdentity(workspaceIdentityId: string, actor: string, workspaceId: string) {
   const workspaceIdentity = await workspaceIdentityFor(workspaceIdentityId);
   if (!workspaceIdentity || workspaceIdentity.workspaceId !== workspaceId) {
@@ -129,7 +155,19 @@ type IdentityEvent = { arguments: Record<string, any>; identity?: Identity; info
 export const handler = async (event: IdentityEvent) => {
   const actor = actorId(event.identity as Identity);
   const args = event.arguments;
-  const fieldName = event.info?.fieldName || event.fieldName || (args.walletAddress ? "generateApass" : args.internalStatus ? "updateWalletIdentityStatus" : "queryApass");
+  const fieldName = event.info?.fieldName || event.fieldName || (args.organization ? "generateOrganizationApass" : args.walletAddress ? "generateApass" : args.internalStatus ? "updateWalletIdentityStatus" : args.organizationIdentityId ? "queryOrganizationApass" : "queryApass");
+
+  if (fieldName === "generateOrganizationApass") {
+    const chain = normalizeChain(args.chain);
+    await canManage(args.workspaceId, actor);
+    const id = organizationIdentityIdFor(args.workspaceId, chain);
+    const existing = await organizationIdentityFor(id);
+    if (existing) return queryOrganizationIdentity(id, actor, args.workspaceId);
+    await cleanverseRequest("/generate_apass", { customerId: organizationCustomerIdFor(args.workspaceId), subTier: 1, subGroup: "TM", expirationTime: Math.floor(Date.now() / 1000) + ONE_YEAR_SECONDS, wallet: { address: args.walletAddress, chain } }, true);
+    const { errors } = await client.models.OrganizationIdentity.create({ id, workspaceId: args.workspaceId, createdBy: actor, walletAddress: args.walletAddress, chain, internalStatus: "pending", ownershipMessage: args.ownershipMessage, ownershipSignature: args.ownershipSignature });
+    if (errors?.length) throw new Error(errors[0].message);
+    return queryOrganizationIdentity(id, actor, args.workspaceId);
+  }
 
   if (fieldName === "generateApass") {
     const chain = normalizeChain(args.chain);
@@ -167,6 +205,7 @@ export const handler = async (event: IdentityEvent) => {
   }
 
   if (fieldName === "queryApass") return queryIdentity(args.workspaceIdentityId, actor, args.workspaceId);
+  if (fieldName === "queryOrganizationApass") return queryOrganizationIdentity(args.organizationIdentityId, actor, args.workspaceId);
 
   if (fieldName === "updateWalletIdentityStatus") {
     await canManage(args.workspaceId, actor);

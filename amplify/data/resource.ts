@@ -77,11 +77,29 @@ const schema = a.schema({
   KYBProfile: a
     .model({
       workspaceId: a.id().required(),
+      organizationIdentityId: a.id(),
       status: a.enum(["notStarted", "draft", "submitted", "underReview", "approved", "rejected", "needsChanges"]),
       submittedAt: a.datetime(),
       reviewedAt: a.datetime(),
       reviewedBy: a.string(),
       reviewNote: a.string(),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  OrganizationIdentity: a
+    .model({
+      workspaceId: a.id().required(),
+      createdBy: a.string().required(),
+      walletAddress: a.string().required(),
+      chain: a.string().required(),
+      internalStatus: a.enum(["pending", "active", "needsReview", "suspended", "archived"]),
+      statusNote: a.string(),
+      statusUpdatedAt: a.datetime(),
+      statusUpdatedBy: a.string(),
+      ownershipMessage: a.string().required(),
+      ownershipSignature: a.string().required(),
+      ownershipVerifiedAt: a.datetime(),
+      ownershipVerifiedBy: a.string(),
     })
     .authorization((allow) => [allow.authenticated()]),
 
@@ -132,6 +150,27 @@ const schema = a.schema({
       validUntil: a.string().required(),
       issuingCountryISO2: a.string().required(),
     })
+    .returns(apassStatus)
+    .handler(a.handler.function(cleanverseIdentity))
+    .authorization((allow) => [allow.authenticated()]),
+
+  generateOrganizationApass: a
+    .mutation()
+    .arguments({
+      workspaceId: a.id().required(),
+      walletAddress: a.string().required(),
+      chain: a.string().required(),
+      ownershipMessage: a.string().required(),
+      ownershipSignature: a.string().required(),
+      organization: a.boolean().required(),
+    })
+    .returns(apassStatus)
+    .handler(a.handler.function(cleanverseIdentity))
+    .authorization((allow) => [allow.authenticated()]),
+
+  queryOrganizationApass: a
+    .query()
+    .arguments({ workspaceId: a.id().required(), organizationIdentityId: a.id().required() })
     .returns(apassStatus)
     .handler(a.handler.function(cleanverseIdentity))
     .authorization((allow) => [allow.authenticated()]),
