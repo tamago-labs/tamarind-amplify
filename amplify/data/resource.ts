@@ -97,6 +97,10 @@ const schema = a.schema({
       chain: a.string().required(),
       ownershipMessage: a.string().required(),
       ownershipSignature: a.string().required(),
+      fullName: a.string().required(),
+      passportNumber: a.string().required(),
+      validUntil: a.string().required(),
+      issuingCountryISO2: a.string().required(),
     })
     .returns(apassStatus)
     .handler(a.handler.function(cleanverseIdentity))

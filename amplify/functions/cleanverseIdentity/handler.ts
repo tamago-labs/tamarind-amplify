@@ -10,7 +10,6 @@ Amplify.configure(resourceConfig, libraryOptions);
 
 const client = generateClient<Schema>();
 const IV = Buffer.alloc(16, 0);
-const ONE_YEAR_SECONDS = 365 * 24 * 60 * 60;
 const chainSlugs = new Set(["base", "ethereum", "monad"]);
 
 type Identity = { sub?: string; username?: string } | undefined;
@@ -37,6 +36,13 @@ function normalizeChain(chain: string) {
   const value = chain.toLowerCase();
   if (!chainSlugs.has(value)) throw new Error("Unsupported Cleanverse chain");
   return value;
+}
+
+function expirationFromPassport(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error("Passport expiry must use YYYY-MM-DD format");
+  const timestamp = Date.parse(`${value}T23:59:59Z`);
+  if (!Number.isFinite(timestamp) || timestamp <= Date.now()) throw new Error("Passport must not be expired");
+  return Math.floor(timestamp / 1000);
 }
 
 function encrypt(body: object) {
@@ -133,10 +139,15 @@ export const handler = async (event: IdentityEvent) => {
     const { data: existing } = await client.models.WalletIdentity.get({ id: walletIdentityId });
     if (existing && existing.walletAddress.toLowerCase() !== args.walletAddress.toLowerCase()) throw new Error("A different wallet is already registered for this network");
     if (!existing) {
+      const issuingCountryISO2 = args.issuingCountryISO2.toUpperCase();
+      if (!/^[A-Z]{2}$/.test(issuingCountryISO2)) throw new Error("Issuing country must be a two-letter ISO code");
       await cleanverseRequest("/generate_apass", {
         customerId: customerIdFor(actor),
-        expirationTime: Math.floor(Date.now() / 1000) + ONE_YEAR_SECONDS,
+        subTier: 1,
+        subGroup: "TM",
+        expirationTime: expirationFromPassport(args.validUntil),
         wallet: { address: args.walletAddress, chain },
+        identityDataList: [{ idType: "PASSPORT", fullName: args.fullName, idNumber: args.passportNumber, validUntil: args.validUntil, issuingCountryISO2 }],
       }, true);
       const { errors: walletErrors } = await client.models.WalletIdentity.create({ id: walletIdentityId, userId: actor, walletAddress: args.walletAddress, chain });
       if (walletErrors?.length) {
