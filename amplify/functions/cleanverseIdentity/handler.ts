@@ -40,7 +40,11 @@ function normalizeChain(chain: string) {
 }
 
 function encrypt(body: object) {
-  const key = Buffer.from(env.CLEANVERSE_API_KEY, "base64");
+  const configuredKey = env.CLEANVERSE_API_KEY.trim().replace(/^['"]|['"]$/g, "");
+  const decodedKey = Buffer.from(configuredKey.replace(/\s/g, ""), "base64");
+  const rawKey = Buffer.from(configuredKey, "utf8");
+  const key = decodedKey.length === 32 ? decodedKey : rawKey.length === 32 ? rawKey : null;
+  if (!key) throw new Error("CLEANVERSE_API_KEY must be a Base64-encoded 32-byte key (or a raw 32-byte key)");
   const cipher = crypto.createCipheriv("aes-256-cbc", key, IV);
   return Buffer.concat([cipher.update(JSON.stringify(body), "utf8"), cipher.final()]).toString("base64");
 }
