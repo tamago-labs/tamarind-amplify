@@ -55,6 +55,36 @@ const schema = a.schema({
       allow.authenticated(),
     ]),
 
+  OrganizationProfile: a
+    .model({
+      workspaceId: a.id().required(),
+      legalName: a.string().required(),
+      tradingName: a.string(),
+      incorporationCountryISO2: a.string().required(),
+      entityType: a.string().required(),
+      registrationNumber: a.string(),
+      taxId: a.string(),
+      registeredAddress: a.string(),
+      website: a.string(),
+      localCurrency: a.string().required(),
+      fiscalYearStart: a.string().required(),
+      businessDescription: a.string(),
+      contactEmail: a.string(),
+      contactPhone: a.string(),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  KYBProfile: a
+    .model({
+      workspaceId: a.id().required(),
+      status: a.enum(["notStarted", "draft", "submitted", "underReview", "approved", "rejected", "needsChanges"]),
+      submittedAt: a.datetime(),
+      reviewedAt: a.datetime(),
+      reviewedBy: a.string(),
+      reviewNote: a.string(),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
   WalletIdentity: a
     .model({
       userId: a.string().required(),

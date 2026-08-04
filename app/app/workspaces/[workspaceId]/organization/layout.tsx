@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
-import { FileStack, Settings2, Users } from "lucide-react";
+import { Building2, FileCheck2, FileStack, Settings2, Users } from "lucide-react";
 
 export default function OrganizationLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -24,6 +24,20 @@ export default function OrganizationLayout({ children }: { children: ReactNode }
           >
             <Users size={17} />
             Members
+          </Link>
+          <Link
+            href={`${basePath}/profile`}
+            className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${pathname === `${basePath}/profile` ? "bg-indigo/10 text-indigo" : "text-sub hover:bg-paper hover:text-ink"}`}
+          >
+            <Building2 size={17} />
+            Company Profile
+          </Link>
+          <Link
+            href={`${basePath}/kyb`}
+            className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${pathname === `${basePath}/kyb` ? "bg-indigo/10 text-indigo" : "text-sub hover:bg-paper hover:text-ink"}`}
+          >
+            <FileCheck2 size={17} />
+            KYB Verification
           </Link>
           <Link
             href={`${basePath}/templates`}
