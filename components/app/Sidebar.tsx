@@ -41,7 +41,6 @@ const navByRole: Record<string, NavItem[]> = {
   admin: [
     { page: "overview", label: "Overview", icon: "overview" },
     { page: "workflows", label: "Workflows", icon: "workflows" },
-    { page: "wallets", label: "Wallets", icon: "wallets" },
     { page: "identities", label: "Identities", icon: "identity" },
     { page: "payments", label: "Payments", icon: "payments" },
     { page: "invoices", label: "Invoices", icon: "invoices" },
@@ -53,7 +52,6 @@ const navByRole: Record<string, NavItem[]> = {
   company: [
     { page: "overview", label: "Overview", icon: "overview" },
     { page: "workflows", label: "Workflows", icon: "workflows" },
-    { page: "wallets", label: "Wallets", icon: "wallets" },
     { page: "identities", label: "Identities", icon: "identity" },
     { page: "payments", label: "Payments", icon: "payments" },
     { page: "invoices", label: "Invoices", icon: "invoices" },

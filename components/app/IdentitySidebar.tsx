@@ -26,7 +26,7 @@ export default function IdentitySidebar() {
       const { data: links } = await client.models.WorkspaceIdentity.list({ filter: { workspaceId: { eq: workspaceId }, userId: { eq: userId } } });
       const nextItems = await Promise.all((links || []).map(async (link) => {
         const { data: wallet } = await client.models.WalletIdentity.get({ id: link.walletIdentityId });
-        return { ...link, ...wallet };
+        return { ...wallet, ...link, walletAddress: wallet?.walletAddress, chain: wallet?.chain };
       }));
       setItems(nextItems);
     }

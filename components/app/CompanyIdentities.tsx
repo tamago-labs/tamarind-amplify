@@ -30,7 +30,7 @@ export default function CompanyIdentities() {
     const { data: identities } = await client.models.WorkspaceIdentity.list({ filter: { workspaceId: { eq: workspaceId } } });
     const nextRows = await Promise.all((identities || []).map(async (identity) => {
       const { data: walletIdentity } = await client.models.WalletIdentity.get({ id: identity.walletIdentityId });
-      try { const { data: live } = await client.queries.queryApass({ workspaceId, workspaceIdentityId: identity.id }); return { ...identity, ...walletIdentity, live, memberName: memberMap.get(identity.userId) || identity.userId }; } catch { return { ...identity, ...walletIdentity, live: null, memberName: memberMap.get(identity.userId) || identity.userId }; }
+      try { const { data: live } = await client.queries.queryApass({ workspaceId, workspaceIdentityId: identity.id }); return { ...walletIdentity, ...identity, walletAddress: walletIdentity?.walletAddress, chain: walletIdentity?.chain, live, memberName: memberMap.get(identity.userId) || identity.userId }; } catch { return { ...walletIdentity, ...identity, walletAddress: walletIdentity?.walletAddress, chain: walletIdentity?.chain, live: null, memberName: memberMap.get(identity.userId) || identity.userId }; }
     }));
     setRows(nextRows);
     setLoading(false);
