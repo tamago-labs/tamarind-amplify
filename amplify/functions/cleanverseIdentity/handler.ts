@@ -85,6 +85,7 @@ async function queryIdentity(workspaceIdentityId: string, actor: string, workspa
     status?: number;
   }>("/query_apass", { chain: identity.chain, address: identity.walletAddress });
   return {
+    workspaceIdentityId,
     walletAddress: identity.walletAddress,
     chain: identity.chain,
     cvRecordId: result.data?.cvRecordId,
@@ -101,13 +102,14 @@ async function queryIdentity(workspaceIdentityId: string, actor: string, workspa
   };
 }
 
-type IdentityEvent = { arguments: Record<string, any>; identity?: Identity; info: { fieldName: string } };
+type IdentityEvent = { arguments: Record<string, any>; identity?: Identity; info?: { fieldName?: string }; fieldName?: string };
 
 export const handler = async (event: IdentityEvent) => {
   const actor = actorId(event.identity as Identity);
   const args = event.arguments;
+  const fieldName = event.info?.fieldName || event.fieldName || (args.walletAddress ? "generateApass" : args.internalStatus ? "updateWalletIdentityStatus" : "queryApass");
 
-  if (event.info.fieldName === "generateApass") {
+  if (fieldName === "generateApass") {
     const chain = normalizeChain(args.chain);
     const member = await memberFor(args.workspaceId, actor);
     if (!member || member.status !== "active") throw new Error("Active workspace membership is required");
@@ -129,9 +131,9 @@ export const handler = async (event: IdentityEvent) => {
     return queryIdentity(workspaceIdentityId, actor, args.workspaceId);
   }
 
-  if (event.info.fieldName === "queryApass") return queryIdentity(args.workspaceIdentityId, actor, args.workspaceId);
+  if (fieldName === "queryApass") return queryIdentity(args.workspaceIdentityId, actor, args.workspaceId);
 
-  if (event.info.fieldName === "updateWalletIdentityStatus") {
+  if (fieldName === "updateWalletIdentityStatus") {
     await canManage(args.workspaceId, actor);
     const { data: identity } = await client.models.WorkspaceIdentity.get({ id: args.workspaceIdentityId });
     if (!identity || identity.workspaceId !== args.workspaceId) throw new Error("Identity not found");
@@ -140,7 +142,7 @@ export const handler = async (event: IdentityEvent) => {
     return { success: Boolean(updated), statusUpdatedAt: now };
   }
 
-  if (event.info.fieldName === "verifyWalletIdentity") {
+  if (fieldName === "verifyWalletIdentity") {
     await canManage(args.workspaceId, actor);
     const { data: identity } = await client.models.WorkspaceIdentity.get({ id: args.workspaceIdentityId });
     if (!identity || identity.workspaceId !== args.workspaceId) throw new Error("Identity not found");
@@ -149,5 +151,5 @@ export const handler = async (event: IdentityEvent) => {
     return { success: Boolean(updated), verifiedAt: now };
   }
 
-  throw new Error(`Unsupported identity operation: ${event.info.fieldName}`);
+  throw new Error(`Unsupported identity operation: ${fieldName}`);
 };

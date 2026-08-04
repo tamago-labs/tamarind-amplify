@@ -2,6 +2,7 @@ import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { cleanverseIdentity } from "../functions/cleanverseIdentity/resource.js";
 
 const apassStatus = a.customType({
+  workspaceIdentityId: a.id(),
   walletAddress: a.string(),
   chain: a.string(),
   cvRecordId: a.string(),
