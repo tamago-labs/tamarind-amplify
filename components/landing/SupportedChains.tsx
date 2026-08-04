@@ -4,33 +4,21 @@ import { motion } from "framer-motion";
 import { networkIcons } from "@web3icons/react";
 
 const chains = [
-  { name: "Monad", icon: networkIcons.NetworkMonad },
-  { name: "Base", icon: networkIcons.NetworkBase },
-  { name: "Ethereum", icon: networkIcons.NetworkEthereum },
-  { name: "Arbitrum", icon: networkIcons.NetworkArbitrumOne },
-  { name: "Polygon", icon: networkIcons.NetworkPolygon },
   { name: "Solana", icon: networkIcons.NetworkSolana },
-  { name: "Tron", icon: networkIcons.NetworkTron },
-  { name: "Optimism", icon: networkIcons.NetworkOptimism },
-  { name: "Sonic", icon: networkIcons.NetworkSonic },
-  { name: "Sei", icon: networkIcons.NetworkSeiNetwork },
-  { name: "Unichain", icon: networkIcons.NetworkUnichain },
-  { name: "World Chain", icon: networkIcons.NetworkWorld },
-  { name: "Linea", icon: networkIcons.NetworkLinea },
-  { name: "Cronos", icon: networkIcons.NetworkCronos },
+  { name: "Base", icon: networkIcons.NetworkBase },
   { name: "Avalanche", icon: networkIcons.NetworkAvalanche },
-  { name: "Flow", icon: networkIcons.NetworkFlow },
-  { name: "Hedera", icon: networkIcons.NetworkHederaHashgraph },
-  { name: "NEAR", icon: networkIcons.NetworkNearProtocol },
-  { name: "Celo", icon: networkIcons.NetworkCelo },
-  { name: "Gnosis", icon: networkIcons.NetworkGnosis },
-  { name: "zkSync", icon: networkIcons.NetworkZksync },
+  { name: "Arbitrum", icon: networkIcons.NetworkArbitrumOne },
+  { name: "Ethereum", icon: networkIcons.NetworkEthereum },
+  { name: "Polygon", icon: networkIcons.NetworkPolygon },
+  { name: "BSC", icon: networkIcons.NetworkBinanceSmartChain },
+  { name: "Monad", icon: networkIcons.NetworkMonad },
+  { name: "HashKey", icon: networkIcons.NetworkHashkey },
 ];
 
 export default function SupportedChains() {
   return (
     <section id="supported-chains" className="bg-panel">
-      <div className="max-w-5xl mx-auto px-6 lg:px-10 py-20 lg:py-28">
+      <div className="max-w-4xl mx-auto px-6 lg:px-10 py-20 lg:py-28">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -42,10 +30,10 @@ export default function SupportedChains() {
           </p>
           <h2 className="text-3xl md:text-4xl font-semibold text-ink tracking-tight leading-tight mb-4">
             Available on{" "}
-            <span className="text-indigo">20+ Chains</span><span className="text-indigo text-lg align-super">*</span>
+            <span className="text-indigo">10+ Chains</span><span className="text-indigo text-lg align-super">*</span>
           </h2>
           <p className="text-lg text-sub max-w-2xl leading-relaxed mb-10">
-            Send and receive USDC on any supported network. Cross-chain transfers powered by Circle Gateway — same asset, instant settlement.
+            Send and receive payment assets across supported networks, with A-Pass identity and Cleanverse compliance checks built into every transfer.
           </p>
 
           <div className="flex flex-wrap justify-center gap-4">
