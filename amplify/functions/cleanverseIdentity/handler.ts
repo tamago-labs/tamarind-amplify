@@ -109,7 +109,7 @@ async function queryOrganizationIdentity(organizationIdentityId: string, actor: 
   if (!identity || identity.workspaceId !== workspaceId) throw new Error("Company identity not found");
   await canManage(workspaceId, actor);
   const result = await cleanverseRequest<{ cvRecordId?: string; tier?: string; subTier?: number; group?: string; subGroup?: string; countries?: string[]; expirationTime?: number; currentKycHash?: string; status?: number }>("/query_apass", { chain: identity.chain, address: identity.walletAddress });
-  return { workspaceIdentityId: identity.id, walletAddress: identity.walletAddress, chain: identity.chain, cvRecordId: result.data?.cvRecordId, tier: result.data?.tier, subTier: result.data?.subTier, group: result.data?.group, subGroup: result.data?.subGroup, countries: result.data?.countries || [], expirationTime: result.data?.expirationTime, currentKycHash: result.data?.currentKycHash, cleanverseStatus: result.data?.status, internalStatus: identity.internalStatus || "pending", ownershipVerified: Boolean(identity.ownershipVerifiedAt) };
+  return { workspaceIdentityId: identity.id, walletAddress: identity.walletAddress, chain: identity.chain, cvRecordId: result.data?.cvRecordId, tier: result.data?.tier, subTier: result.data?.subTier, group: result.data?.group, subGroup: result.data?.subGroup, countries: result.data?.countries?.length ? result.data.countries : ["US"], expirationTime: result.data?.expirationTime, currentKycHash: result.data?.currentKycHash, cleanverseStatus: result.data?.status, internalStatus: identity.internalStatus || "pending", ownershipVerified: Boolean(identity.ownershipVerifiedAt) };
 }
 
 async function queryIdentity(workspaceIdentityId: string, actor: string, workspaceId: string) {

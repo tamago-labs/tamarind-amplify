@@ -37,7 +37,7 @@ export default function OrganizationLayout({ children }: { children: ReactNode }
             className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${pathname === `${basePath}/kyb` ? "bg-indigo/10 text-indigo" : "text-sub hover:bg-paper hover:text-ink"}`}
           >
             <FileCheck2 size={17} />
-            KYB Verification
+            Company A-Pass
           </Link>
           <Link
             href={`${basePath}/templates`}

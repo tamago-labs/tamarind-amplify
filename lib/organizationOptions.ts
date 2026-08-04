@@ -22,10 +22,3 @@ export const currencies = [
 ] as const;
 
 export const entityTypes = ["Corporation", "Limited liability company", "Partnership", "Sole proprietorship", "Non-profit", "Other"] as const;
-
-export const kybStatuses = ["notStarted", "draft", "submitted", "underReview", "approved", "rejected", "needsChanges"] as const;
-
-export function statusLabel(status?: string | null) {
-  if (!status) return "Not started";
-  return status.replace(/([A-Z])/g, " $1").replace(/^./, (value) => value.toUpperCase());
-}

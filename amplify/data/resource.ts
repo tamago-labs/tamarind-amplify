@@ -74,18 +74,6 @@ const schema = a.schema({
     })
     .authorization((allow) => [allow.authenticated()]),
 
-  KYBProfile: a
-    .model({
-      workspaceId: a.id().required(),
-      organizationIdentityId: a.id(),
-      status: a.enum(["notStarted", "draft", "submitted", "underReview", "approved", "rejected", "needsChanges"]),
-      submittedAt: a.datetime(),
-      reviewedAt: a.datetime(),
-      reviewedBy: a.string(),
-      reviewNote: a.string(),
-    })
-    .authorization((allow) => [allow.authenticated()]),
-
   OrganizationIdentity: a
     .model({
       workspaceId: a.id().required(),
