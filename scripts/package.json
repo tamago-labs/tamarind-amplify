@@ -1,0 +1,44 @@
+{
+  "name": "tamarind-scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "0-check-cleanverse-config": "tsx 0-check-cleanverse-config.ts",
+    "1-generate-apass": "tsx 1-generate-apass.ts",
+    "2-query-apass": "tsx 2-query-apass.ts",
+    "3-query-tokens": "tsx 3-query-tokens.ts",
+    "4-launch-atoken": "tsx 4-launch-atoken.ts",
+    "5-query-status": "tsx 5-query-status.ts",
+    "6-list-atokens": "tsx 6-list-atokens.ts",
+    "7-add-rule": "tsx 7-add-rule.ts",
+    "8-query-rules": "tsx 8-query-rules.ts",
+    "9-faucet": "tsx 9-faucet.ts",
+    "10-query-apass-list": "tsx 10-query-apass-list.ts",
+    "11-verify-apass": "tsx 11-verify-apass.ts",
+    "12-update-status": "tsx 12-update-status.ts",
+    "13-query-deposit-addr": "tsx 13-query-deposit-addr.ts",
+    "14-query-transactions": "tsx 14-query-transactions.ts",
+    "15-download-travel-rule": "tsx 15-download-travel-rule.ts",
+    "16-set-atoken-paused": "tsx 16-set-atoken-paused.ts",
+    "17-query-atoken-paused": "tsx 17-query-atoken-paused.ts",
+    "18-mint-atoken": "tsx 18-mint-atoken.ts",
+    "19-validator-sign": "tsx 19-validator-sign.ts",
+    "20-validator-grant": "tsx 20-validator-grant.ts",
+    "21-validator-is-register": "tsx 21-validator-is-register.ts",
+    "22-validator-register": "tsx 22-validator-register.ts",
+    "23-validator-rules": "tsx 23-validator-rules.ts",
+    "24-validator-set-rule": "tsx 24-validator-set-rule.ts",
+    "25-validator-add-rule": "tsx 25-validator-add-rule.ts",
+    "26-validator-verify": "tsx 26-validator-verify.ts",
+    "27-validator-set-paused": "tsx 27-validator-set-paused.ts",
+    "28-validator-is-paused": "tsx 28-validator-is-paused.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "tsx": "^4.0.0",
+    "typescript": "~5.7.0"
+  },
+  "dependencies": {
+    "ethers": "^6.17.0"
+  }
+}
