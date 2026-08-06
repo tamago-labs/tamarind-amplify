@@ -16,7 +16,9 @@ pragma solidity ^0.8.24;
 /// The same namespaced hash can be reproduced later to resolve the proof back
 /// to the private settlement record without exposing the UUID on-chain.
 contract TamarindProof {
-    event RootAnchored(bytes32 indexed merkleRoot, bytes32 indexed settlementId, address indexed submitter, uint256 timestamp);
+    event RootAnchored(
+        bytes32 indexed merkleRoot, bytes32 indexed settlementId, address indexed submitter, uint256 timestamp
+    );
 
     struct DocumentRecord {
         bytes32 merkleRoot;
