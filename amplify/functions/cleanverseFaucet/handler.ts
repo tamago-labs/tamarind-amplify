@@ -17,17 +17,7 @@ interface FaucetResponse {
 }
 
 const API_ID = process.env.CLEANVERSE_API_ID!;
-const API_KEY = process.env.CLEANVERSE_API_KEY!;
 const BASE_URL = process.env.CLEANVERSE_BASE_URL!;
-
-const IV = Buffer.alloc(16, 0);
-
-function encrypt(plaintext: object): string {
-  const key = Buffer.from(API_KEY, "base64");
-  const cipher = crypto.createCipheriv("aes-256-cbc", key, IV);
-  const encrypted = cipher.update(JSON.stringify(plaintext), "utf8");
-  return Buffer.concat([encrypted, cipher.final()]).toString("base64");
-}
 
 function uuid(): string {
   return crypto.randomUUID();
@@ -53,12 +43,10 @@ export async function handler(
       "X-Request-ID": uuid(),
     };
 
-    const payload = { data: encrypt(body) };
-
     const res = await fetch(url, {
       method: "POST",
       headers,
-      body: JSON.stringify(payload),
+      body: JSON.stringify(body),
     });
 
     const json = (await res.json()) as { code: string; message: string; data: FaucetResponse };

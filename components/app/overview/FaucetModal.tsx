@@ -120,7 +120,7 @@ export default function FaucetModal({ isOpen, onClose, token }: FaucetModalProps
                   </div>
 
                   <p className="text-xs text-sub mb-6">
-                    Testnet tokens have no real value. Limited to one request per 2 hours per wallet.
+                    Cleanverse USDC for testing. Limited to 5 USDC per request.
                   </p>
 
                   <button
