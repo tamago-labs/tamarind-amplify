@@ -36,6 +36,7 @@ const schema = a.schema({
       inviteCode: a.string().required(),
       ownerId: a.string().required(),
       members: a.hasMany("WorkspaceMember", "workspaceId"),
+      tokens: a.hasMany("WorkspaceToken", "workspaceId"),
     })
     .authorization((allow) => [
       allow.authenticated(),
@@ -49,6 +50,28 @@ const schema = a.schema({
       status: a.enum(["pending", "active"]),
       assignedAt: a.datetime(),
       assignedBy: a.string(),
+      workspace: a.belongsTo("Workspace", "workspaceId"),
+    })
+    .authorization((allow) => [
+      allow.authenticated(),
+    ]),
+
+  WorkspaceToken: a
+    .model({
+      workspaceId: a.id().required(),
+      tokenAddress: a.string().required(),
+      name: a.string().required(),
+      symbol: a.string().required(),
+      decimals: a.integer().required(),
+      icon: a.string(),
+      chain: a.string().required(),
+      tokenType: a.enum(["ERC20", "A_TOKEN", "WRAPPED_TOKEN"]),
+      originalTokenAddress: a.string(),
+      originalTokenName: a.string(),
+      originalTokenSymbol: a.string(),
+      originalTokenDecimals: a.integer(),
+      originalTokenIcon: a.string(),
+      addedBy: a.string(),
       workspace: a.belongsTo("Workspace", "workspaceId"),
     })
     .authorization((allow) => [

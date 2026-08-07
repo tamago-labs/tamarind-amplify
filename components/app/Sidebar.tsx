@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Users,
   Wallet,
+  Coins,
 } from "lucide-react";
 import Brand from "@/components/Brand";
 
@@ -33,6 +34,7 @@ const icons = {
   dueDiligence: ShieldCheck,
   identity: Users,
   organization: Network,
+  tokenRegistry: Coins,
 };
 
 type NavItem = { page: string; label: string; icon: keyof typeof icons };
@@ -47,6 +49,7 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
     { page: "receivable", label: "Receivable", icon: "receivable" },
     { page: "organization-members", label: "Organization", icon: "organization" },
+    { page: "organization-tokens", label: "Token Registry", icon: "tokenRegistry" },
   ],
   company: [
     { page: "overview", label: "Overview", icon: "overview" },
@@ -57,6 +60,7 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
     { page: "receivable", label: "Receivable", icon: "receivable" },
     { page: "organization-members", label: "Organization", icon: "organization" },
+    { page: "organization-tokens", label: "Token Registry", icon: "tokenRegistry" },
   ],
   counterParty: [
     { page: "overview", label: "Overview", icon: "overview" },
@@ -96,12 +100,14 @@ export default function Sidebar({ role, workspaceId }: { role: string; workspace
           const Icon = icons[item.icon];
           const href = item.page === "organization-members"
             ? `/app/workspaces/${workspaceId}/organization/members`
-            : item.page === "identity"
-              ? `/app/workspaces/${workspaceId}/identity/identities`
-              : item.page === "identities"
-                ? `/app/workspaces/${workspaceId}/identities`
-            : `/app/workspaces/${workspaceId}/${item.page}`;
-          const active = pathname === href || (item.page === "organization-members" && pathname.startsWith(`/app/workspaces/${workspaceId}/organization`)) || (item.page === "identity" && pathname.startsWith(`/app/workspaces/${workspaceId}/identity`)) || (item.page === "identities" && pathname.startsWith(`/app/workspaces/${workspaceId}/identities`));
+            : item.page === "organization-tokens"
+              ? `/app/workspaces/${workspaceId}/organization/tokens`
+              : item.page === "identity"
+                ? `/app/workspaces/${workspaceId}/identity/identities`
+                : item.page === "identities"
+                  ? `/app/workspaces/${workspaceId}/identities`
+              : `/app/workspaces/${workspaceId}/${item.page}`;
+          const active = pathname === href || (item.page === "organization-members" && pathname.startsWith(`/app/workspaces/${workspaceId}/organization`)) || (item.page === "organization-tokens" && pathname.startsWith(`/app/workspaces/${workspaceId}/organization/tokens`)) || (item.page === "identity" && pathname.startsWith(`/app/workspaces/${workspaceId}/identity`)) || (item.page === "identities" && pathname.startsWith(`/app/workspaces/${workspaceId}/identities`));
           return (
             <Link key={item.page} href={href} className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${active ? "bg-indigo/10 text-indigo" : "text-sub hover:bg-paper hover:text-ink"}`}>
               <Icon size={18} />
