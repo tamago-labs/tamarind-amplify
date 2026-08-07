@@ -1,23 +1,17 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import type { Schema } from "../../data/resource.js";
+import { Amplify } from "aws-amplify";
+import { getAmplifyDataClientConfig } from "@aws-amplify/backend/function/runtime";
+import { generateClient } from "aws-amplify/data";
+import { env } from "$amplify/env/cleanverseFaucet";
 
-interface FaucetBody {
-  Chain: string;
-  Symbol: string;
-  DepositAddress: string;
-  Amount: string;
-}
+const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env);
+Amplify.configure(resourceConfig, libraryOptions);
 
-interface FaucetResponse {
-  chain: string;
-  symbol: string;
-  deposit_address: string;
-  amount: string;
-  tx_hash: string;
-}
+const client = generateClient<Schema>();
 
-const API_ID = process.env.CLEANVERSE_API_ID!;
-const BASE_URL = process.env.CLEANVERSE_BASE_URL!;
+const API_ID = env.CLEANVERSE_API_ID;
+const BASE_URL = env.CLEANVERSE_BASE_URL;
 
 function uuid(): string {
   return crypto.randomUUID();
@@ -26,15 +20,18 @@ function uuid(): string {
 export async function handler(
   event: Schema["cleanverseFaucet"]["functionHandler"]
 ): Promise<{ success: boolean; txHash?: string; error?: string }> {
+  console.log("Lambda received event.arguments:", JSON.stringify(event.arguments));
   const { chain, depositAddress, amount } = event.arguments;
+  console.log("Extracted values:", { chain, depositAddress, amount });
 
   try {
-    const body: FaucetBody = {
+    const body = {
       Chain: chain,
       Symbol: "usdc",
       DepositAddress: depositAddress,
       Amount: amount || "5",
     };
+    console.log("Request body:", JSON.stringify(body));
 
     const url = `${BASE_URL}/faucet`;
     const headers: Record<string, string> = {
@@ -43,13 +40,17 @@ export async function handler(
       "X-Request-ID": uuid(),
     };
 
+    console.log("Sending request to:", url);
     const res = await fetch(url, {
       method: "POST",
       headers,
       body: JSON.stringify(body),
     });
 
-    const json = (await res.json()) as { code: string; message: string; data: FaucetResponse };
+    const responseText = await res.text();
+    console.log("Raw response:", responseText);
+    const json = JSON.parse(responseText);
+    console.log("Parsed response:", JSON.stringify(json));
 
     if (json.code === "0000" || json.code === "0" || json.code === "200") {
       return {
@@ -63,6 +64,7 @@ export async function handler(
       };
     }
   } catch (error) {
+    console.error("Lambda error:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

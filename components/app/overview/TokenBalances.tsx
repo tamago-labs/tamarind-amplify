@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
 import { DEFAULT_TOKENS, SUPPORTED_CHAINS, formatTokenBalance, getTokenTypeLabel } from "@/config/tokens";
@@ -84,7 +84,7 @@ function BalanceFetcher({
       });
       onBalancesFetched(balanceMap);
     }
-  }, [data, tokens, chainId, onBalancesFetched]);
+  }, [data]);
 
   return null;
 }
@@ -168,7 +168,7 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
     }
   }
 
-  const handleBalancesFetched = (balanceMap: Record<string, string>) => {
+  const handleBalancesFetched = useCallback((balanceMap: Record<string, string>) => {
     setBalances((prev) =>
       prev.map((token) => {
         const key = `${token.tokenAddress}-${token.chain}`;
@@ -184,7 +184,7 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
         return token;
       })
     );
-  };
+  }, []);
 
   function getActions(token: TokenBalance) {
     const actions = [];
@@ -241,8 +241,7 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      <table className="w-full">
           <thead>
             <tr className="border-b border-hair">
               <th className="px-6 py-3 text-left text-sm font-medium text-sub">Token</th>
@@ -313,7 +312,6 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
             )}
           </tbody>
         </table>
-      </div>
 
       <FaucetModal
         isOpen={showFaucetModal}
