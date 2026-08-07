@@ -14,27 +14,31 @@ interface TokenActionsProps {
 
 export default function TokenActions({ actions }: TokenActionsProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current && !buttonRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       setDropdownPosition({
         top: rect.bottom + window.scrollY + 4,
-        right: window.innerWidth - rect.right,
+        left: rect.left,
       });
     }
   }, [isOpen]);
@@ -56,7 +60,10 @@ export default function TokenActions({ actions }: TokenActionsProps) {
     <div className="relative">
       <button
         ref={buttonRef}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
         className="flex items-center gap-1 text-sm text-indigo hover:text-indigo/80 transition-colors"
       >
         {actions[0].label}
@@ -67,12 +74,13 @@ export default function TokenActions({ actions }: TokenActionsProps) {
         <div
           ref={dropdownRef}
           className="fixed bg-panel border border-hair rounded-lg shadow-lg py-1 z-50 min-w-[120px]"
-          style={{ top: dropdownPosition.top, right: dropdownPosition.right }}
+          style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
         >
           {actions.map((action) => (
             <button
               key={action.label}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 action.onClick();
                 setIsOpen(false);
               }}
