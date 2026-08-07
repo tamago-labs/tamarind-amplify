@@ -9,18 +9,35 @@ interface WalletState {
   adapter: unknown | null;
   address: string | null;
   connected: boolean;
+  chain: string | null;
 }
 
-const WalletContext = createContext<WalletState>({ adapter: null, address: null, connected: false });
+const WalletContext = createContext<WalletState>({ adapter: null, address: null, connected: false, chain: null });
 
 export function useWallet() {
   return useContext(WalletContext);
 }
 
+function mapChainIdToName(chainId: number | undefined): string | null {
+  if (!chainId) return null;
+  // Base Sepolia: 84531, Base: 8453, Monad: 10143
+  switch (chainId) {
+    case 8453:
+    case 84531:
+      return "base";
+    case 10143:
+      return "monad";
+    default:
+      return null;
+  }
+}
+
 export default function WalletProvider({ children }: { children: ReactNode }) {
-  const { isConnected, address } = useAccount();
+  const { isConnected, address, chainId } = useAccount();
   const { data: walletClient } = useWalletClient();
   const [adapter, setAdapter] = useState<unknown | null>(null);
+
+  const chain = mapChainIdToName(chainId);
 
   useEffect(() => {
     if (!isConnected || !walletClient) {
@@ -44,5 +61,5 @@ export default function WalletProvider({ children }: { children: ReactNode }) {
     createAdapter();
   }, [isConnected, walletClient]);
 
-  return <WalletContext.Provider value={{ adapter, address: address || null, connected: isConnected }}>{children}</WalletContext.Provider>;
+  return <WalletContext.Provider value={{ adapter, address: address || null, connected: isConnected, chain }}>{children}</WalletContext.Provider>;
 }

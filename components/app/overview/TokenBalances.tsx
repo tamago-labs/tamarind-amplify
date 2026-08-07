@@ -6,6 +6,7 @@ import type { Schema } from "@/amplify/data/resource";
 import { DEFAULT_TOKENS, SUPPORTED_CHAINS, formatTokenBalance } from "@/config/tokens";
 import TokenIcon from "../token-registry/TokenIcon";
 import TokenActions from "./TokenActions";
+import { useWallet } from "../WalletProvider";
 
 const client = generateClient<Schema>();
 
@@ -23,14 +24,13 @@ interface TokenBalance {
 
 interface TokenBalancesProps {
   workspaceId: string;
-  walletAddress?: string;
-  connectedChain?: string;
 }
 
-export default function TokenBalances({ workspaceId, walletAddress, connectedChain }: TokenBalancesProps) {
+export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
   const [balances, setBalances] = useState<TokenBalance[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeChain, setActiveChain] = useState<string>("monad");
+  const { chain: walletChain } = useWallet();
 
   useEffect(() => {
     loadBalances();
@@ -38,10 +38,10 @@ export default function TokenBalances({ workspaceId, walletAddress, connectedCha
 
   useEffect(() => {
     // When wallet connects, switch to connected chain
-    if (connectedChain && SUPPORTED_CHAINS.some((c) => c.id === connectedChain)) {
-      setActiveChain(connectedChain);
+    if (walletChain && SUPPORTED_CHAINS.some((c) => c.id === walletChain)) {
+      setActiveChain(walletChain);
     }
-  }, [connectedChain]);
+  }, [walletChain]);
 
   async function loadBalances() {
     try {

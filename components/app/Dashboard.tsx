@@ -5,11 +5,9 @@ import TokenBalances from "./overview/TokenBalances";
 interface DashboardProps {
   role: string;
   workspaceId: string;
-  walletAddress?: string;
-  connectedChain?: string;
 }
 
-export default function Dashboard({ role, workspaceId, walletAddress, connectedChain }: DashboardProps) {
+export default function Dashboard({ role, workspaceId }: DashboardProps) {
   return (
     <div>
       <p className="font-mono text-[11px] font-medium uppercase tracking-wide text-sub">Overview</p>
@@ -28,7 +26,7 @@ export default function Dashboard({ role, workspaceId, walletAddress, connectedC
           <p className="text-3xl font-semibold text-ink">0</p>
         </div>
       </div>
-      <TokenBalances workspaceId={workspaceId} walletAddress={walletAddress} connectedChain={connectedChain} />
+      <TokenBalances workspaceId={workspaceId} />
     </div>
   );
 }
