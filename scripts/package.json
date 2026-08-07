@@ -35,7 +35,8 @@
     "28-validator-is-paused": "tsx 28-validator-is-paused.ts",
     "29-wrap": "tsx 29-wrap.ts",
     "30-grant-accesscore": "tsx 30-grant-accesscore.ts",
-    "31-add-whitelist": "tsx 31-add-whitelist.ts"
+    "31-add-whitelist": "tsx 31-add-whitelist.ts",
+    "32-remove-whitelist": "tsx 32-remove-whitelist.ts"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",

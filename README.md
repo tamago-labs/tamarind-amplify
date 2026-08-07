@@ -128,15 +128,18 @@ Send and receive USDC across 20+ chains. Cross-chain transfers powered by Circle
 
 ### Base Sepolia
 
-| Contract | Address |
-|----------|---------|
-| JPYCMock | `0xc4d91B769f0bD8aF2BF7F02862Cd233e62C139d4` |
+| Token | Address | Type |
+|-------|---------|------|
+| JPYC Mock | `0xc4d91b769f0bd8af2bf7f02862cd233e62c139d4` | ERC-20 |
+| aJPYC | `0xE91425E3C244AeE3CD940eca7548CFF010b20828` | Wrapped A-Token |
+
+**Note:** Wrapped A-Token cannot be launched on Monad due to AccessCoreNotSet error.
 
 ### Monad Testnet
 
-| Contract | Address |
-|----------|---------|
-| JPYCMock | `0x9465a4C246D44F32F391Ebda165Acb12886746Ca` |
+| Token | Address | Type |
+|-------|---------|------|
+| JPYC Mock | `0x9465a4C246D44F32F391Ebda165Acb12886746Ca` | ERC-20 |
 
 ---
 

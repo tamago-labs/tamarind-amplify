@@ -12,11 +12,13 @@ const body = {
       symbol: "jpyc",
       assetAddress: "0xc4d91b769f0bd8af2bf7f02862cd233e62c139d4", // JPYC Mock
       walletAddresses: [
-        "0x36bBb997235Fc965a854e132976fC8461B9392F5", // Your wallet
+        "0x971F6680a20671458d456656081ea8e32102a64e", // Your wallet
       ],
     },
   ],
 }
+
+// 0x971F6680a20671458d456656081ea8e32102a64e
 
 console.log("=== Add Whitelist for Institutional Deposits ===\n")
 console.log("Entity:", body.entityName)

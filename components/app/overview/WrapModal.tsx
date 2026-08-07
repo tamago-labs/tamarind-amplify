@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ArrowRight, CheckCircle, XCircle, Loader2 } from "lucide-react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseUnits } from "viem";
-import { ERC20_ABI, TOKEN_ADDRESSES, ACCESS_CORE_ADDRESS } from "@/lib/tokens";
+import { X, ArrowRight, CheckCircle, XCircle, Loader2, ExternalLink } from "lucide-react";
+import { useAccount, useWriteContract } from "wagmi";
+import { parseUnits, erc20Abi } from "viem";
+import { generateClient } from "aws-amplify/data";
+import type { Schema } from "@/amplify/data/resource";
 import { monadTestnet } from "@/lib/wagmi";
 import { baseSepolia } from "viem/chains";
 import TokenIcon from "../token-registry/TokenIcon";
+
+const client = generateClient<Schema>();
 
 interface WrapModalProps {
   isOpen: boolean;
@@ -27,23 +30,20 @@ interface WrapModalProps {
   } | null;
 }
 
-type WrapStatus = "idle" | "approving" | "wrapping" | "success" | "error";
+type WrapStatus = "idle" | "querying" | "transferring" | "success" | "error";
 
 export default function WrapModal({ isOpen, onClose, token }: WrapModalProps) {
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState<WrapStatus>("idle");
   const [error, setError] = useState<string>("");
+  const [txHash, setTxHash] = useState<string>("");
   const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
 
   const chainId = token?.chain === "base" ? baseSepolia.id : monadTestnet.id;
 
   const handleWrap = async () => {
-    console.log("Wrap button clicked", { token, address, amount });
-    if (!token || !address || !amount || !token.originalTokenAddress) {
-      console.log("Missing required data:", { hasToken: !!token, hasAddress: !!address, hasAmount: !!amount, hasOriginal: !!token?.originalTokenAddress });
-      return;
-    }
+    if (!token || !address || !amount || !token.originalTokenAddress) return;
 
     const numAmount = parseFloat(amount);
     if (numAmount <= 0) {
@@ -51,41 +51,46 @@ export default function WrapModal({ isOpen, onClose, token }: WrapModalProps) {
       return;
     }
 
-    setStatus("approving");
+    setStatus("querying");
     setError("");
 
     try {
+      // Step 1: Query deposit address from API
+      const { data: depositData, errors: depositErrors } = await client.queries.queryDepositAddress({
+        chain: token.chain,
+        address: address,
+      });
+
+      if (depositErrors?.length) {
+        setStatus("error");
+        setError(depositErrors[0].message);
+        return;
+      }
+
+      if (!depositData?.success || !depositData?.depositAddress) {
+        setStatus("error");
+        setError(depositData?.error || "Failed to get deposit address");
+        return;
+      }
+
+      const depositAddress = depositData.depositAddress;
+      console.log("Deposit address:", depositAddress);
+
+      setStatus("transferring");
+
+      // Step 2: Transfer token to deposit address
       const tokenAmount = parseUnits(amount, token.decimals);
-      console.log("Token amount:", tokenAmount.toString());
-
-      // Step 1: Approve original token (USDC) for AccessCore
-      console.log("Approving USDC for AccessCore:", { token: token.originalTokenAddress, accessCore: ACCESS_CORE_ADDRESS });
-      const approveTx = await writeContractAsync({
+      const tx = await writeContractAsync({
         address: token.originalTokenAddress as `0x${string}`,
-        abi: ERC20_ABI,
-        functionName: "approve",
-        args: [ACCESS_CORE_ADDRESS, tokenAmount],
-        chainId,
-      });
-      console.log("Approval tx:", approveTx);
-
-      // Wait for approval
-      setStatus("wrapping");
-
-      // Step 2: Transfer USDC to AccessCore (wrap)
-      console.log("Transferring USDC to AccessCore");
-      const wrapTx = await writeContractAsync({
-        address: token.originalTokenAddress as `0x${string}`,
-        abi: ERC20_ABI,
+        abi: erc20Abi,
         functionName: "transfer",
-        args: [ACCESS_CORE_ADDRESS, tokenAmount],
+        args: [depositAddress as `0x${string}`, tokenAmount],
         chainId,
       });
-      console.log("Wrap tx:", wrapTx);
 
+      setTxHash(tx);
       setStatus("success");
     } catch (err) {
-      console.error("Wrap error:", err);
       setStatus("error");
       setError(err instanceof Error ? err.message : "Wrap failed");
     }
@@ -95,17 +100,16 @@ export default function WrapModal({ isOpen, onClose, token }: WrapModalProps) {
     setStatus("idle");
     setAmount("");
     setError("");
+    setTxHash("");
     onClose();
   };
 
   if (!token) return null;
 
   const originalToken = {
-    name: token.originalTokenName || "USDC",
-    symbol: token.originalTokenSymbol || "USDC",
+    name: token.originalTokenName || "JPYC",
+    symbol: token.originalTokenSymbol || "JPYC",
     icon: token.originalTokenIcon || token.icon,
-    tokenAddress: token.originalTokenAddress || token.tokenAddress,
-    decimals: token.decimals,
   };
 
   return (
@@ -166,6 +170,10 @@ export default function WrapModal({ isOpen, onClose, token }: WrapModalProps) {
                     />
                   </div>
 
+                  <p className="text-xs text-sub mb-4">
+                    Transfer {originalToken.symbol} to the deposit address. A-Tokens will be sent to your wallet after ~1 minute.
+                  </p>
+
                   <button
                     onClick={handleWrap}
                     disabled={!amount || parseFloat(amount) <= 0}
@@ -176,29 +184,42 @@ export default function WrapModal({ isOpen, onClose, token }: WrapModalProps) {
                 </>
               )}
 
-              {status === "approving" && (
+              {status === "querying" && (
                 <div className="text-center py-8">
                   <Loader2 size={40} className="mx-auto text-indigo animate-spin mb-4" />
-                  <p className="text-ink font-medium">Approving {token.symbol}...</p>
-                  <p className="text-sm text-sub mt-1">Please confirm in your wallet</p>
+                  <p className="text-ink font-medium">Querying deposit address...</p>
+                  <p className="text-sm text-sub mt-1">Please wait</p>
                 </div>
               )}
 
-              {status === "wrapping" && (
+              {status === "transferring" && (
                 <div className="text-center py-8">
                   <Loader2 size={40} className="mx-auto text-indigo animate-spin mb-4" />
-                  <p className="text-ink font-medium">Wrapping tokens...</p>
-                  <p className="text-sm text-sub mt-1">Processing your wrap transaction</p>
+                  <p className="text-ink font-medium">Transferring tokens...</p>
+                  <p className="text-sm text-sub mt-1">Please confirm in your wallet</p>
                 </div>
               )}
 
               {status === "success" && (
                 <div className="text-center py-8">
                   <CheckCircle size={40} className="mx-auto text-okgreen mb-4" />
-                  <p className="text-ink font-medium">Tokens wrapped!</p>
+                  <p className="text-ink font-medium">Transfer submitted!</p>
                   <p className="text-sm text-sub mt-1">
-                    {amount} {originalToken.symbol} → {amount} {token.symbol}
+                    {amount} {originalToken.symbol} sent to deposit address.
                   </p>
+                  <p className="text-sm text-sub mt-2">
+                    {token.symbol} will arrive in ~1 minute.
+                  </p>
+                  {txHash && (
+                    <a
+                      href={`https://sepolia.basescan.org/tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 mt-3 text-sm text-indigo hover:text-indigo/80"
+                    >
+                      View transaction <ExternalLink size={14} />
+                    </a>
+                  )}
                   <button
                     onClick={handleClose}
                     className="mt-6 w-full px-4 py-2.5 bg-paper border border-hair rounded-lg text-sm font-medium text-ink hover:bg-hair/50 transition-colors"
@@ -211,7 +232,7 @@ export default function WrapModal({ isOpen, onClose, token }: WrapModalProps) {
               {status === "error" && (
                 <div className="text-center py-8">
                   <XCircle size={40} className="mx-auto text-red-500 mb-4" />
-                  <p className="text-ink font-medium">Wrap failed</p>
+                  <p className="text-ink font-medium">Transfer failed</p>
                   <p className="text-sm text-sub mt-1">{error}</p>
                   <button
                     onClick={handleWrap}

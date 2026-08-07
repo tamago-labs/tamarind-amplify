@@ -80,10 +80,15 @@ export default function CompanyIdentities() {
           id: identity.walletIdentityId,
         });
 
-        // Check if this wallet has any whitelist entries
+        // Check if this wallet has any whitelist entries (normalize addresses for comparison)
+        const walletAddressLower = walletIdentity?.walletAddress?.toLowerCase();
+        console.log("Checking whitelist for wallet:", walletAddressLower);
+        console.log("All whitelist entries:", whitelistEntries?.map(e => ({ address: e.walletAddress?.toLowerCase(), chain: e.chain, symbol: e.tokenSymbol })));
+        
         const walletWhitelist = (whitelistEntries || []).filter(
-          (entry) => entry.walletAddress === walletIdentity?.walletAddress
+          (entry) => entry.walletAddress?.toLowerCase() === walletAddressLower
         );
+        console.log("Matching entries:", walletWhitelist.length);
 
         try {
           const { data: live } = await client.queries.queryApass({
@@ -465,6 +470,7 @@ export default function CompanyIdentities() {
         }}
         walletAddress={whitelistIdentity?.walletAddress || ""}
         chain={whitelistIdentity?.chain || "base"}
+        workspaceId={workspaceId}
       />
     </div>
   );

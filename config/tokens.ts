@@ -20,6 +20,43 @@ export const SUPPORTED_CHAINS = [
 ] as const;
 
 export const DEFAULT_TOKENS: TokenConfig[] = [
+  // JPYC Mock Tokens
+  {
+    tokenAddress: "0xc4d91b769f0bd8af2bf7f02862cd233e62c139d4",
+    name: "JPY Coin Mock",
+    symbol: "JPYC",
+    decimals: 6,
+    icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/40123.png",
+    chain: "base",
+    tokenType: "ERC20",
+    isDefault: true,
+  },
+  {
+    tokenAddress: "0x9465a4C246D44F32F391Ebda165Acb12886746Ca",
+    name: "JPY Coin Mock",
+    symbol: "JPYC",
+    decimals: 6,
+    icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/40123.png",
+    chain: "monad",
+    tokenType: "ERC20",
+    isDefault: true,
+  },
+  // aJPYC (Wrapped A-Token)
+  {
+    tokenAddress: "0xE91425E3C244AeE3CD940eca7548CFF010b20828",
+    name: "aJPYC",
+    symbol: "aJPYC",
+    decimals: 6,
+    icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/40123.png",
+    chain: "base",
+    tokenType: "WRAPPED_TOKEN",
+    originalTokenAddress: "0xc4d91b769f0bd8af2bf7f02862cd233e62c139d4",
+    originalTokenName: "JPYC",
+    originalTokenSymbol: "JPYC",
+    originalTokenDecimals: 6,
+    originalTokenIcon: "https://s2.coinmarketcap.com/static/img/coins/64x64/40123.png",
+    isDefault: true,
+  },  
   // ERC-20 Tokens
   {
     tokenAddress: "0x543b96420d072BF587B63C41C0B0922762E986Ce",
@@ -71,28 +108,7 @@ export const DEFAULT_TOKENS: TokenConfig[] = [
     originalTokenDecimals: 6,
     originalTokenIcon: "https://images.cleanverse.com/app/token_icon/USDC.svg",
     isDefault: true,
-  },
-  // JPYC Mock Tokens
-  {
-    tokenAddress: "0xc4d91B769f0bD8aF2BF7F02862Cd233e62C139d4",
-    name: "JPYC Mock",
-    symbol: "JPYC",
-    decimals: 6,
-    icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/40123.png",
-    chain: "base",
-    tokenType: "ERC20",
-    isDefault: true,
-  },
-  {
-    tokenAddress: "0x9465a4C246D44F32F391Ebda165Acb12886746Ca",
-    name: "JPYC Mock",
-    symbol: "JPYC",
-    decimals: 6,
-    icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/40123.png",
-    chain: "monad",
-    tokenType: "ERC20",
-    isDefault: true,
-  },
+  }, 
 ];
 
 export function getTokenTypeLabel(tokenType: string): string {

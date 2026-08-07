@@ -18,7 +18,7 @@ export const config = createConfig({
   connectors: [injected()],
   transports: {
     [baseSepolia.id]: http(alchemyKey ? `https://base-sepolia.g.alchemy.com/v2/${alchemyKey}` : "https://sepolia.base.org"),
-    [monadTestnet.id]: http("https://testnet-rpc.monad.xyz"),
+     [monadTestnet.id]: http(alchemyKey ? `https://monad-testnet.g.alchemy.com/v2/${alchemyKey}` : "https://testnet-rpc.monad.xyz"),
   },
   ssr: true,
 });

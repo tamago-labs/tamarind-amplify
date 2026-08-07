@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ArrowRight, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { X, ArrowRight, CheckCircle, XCircle, Loader2, ExternalLink } from "lucide-react";
 import { useAccount, useWriteContract } from "wagmi";
-import { parseUnits } from "viem";
-import { ERC20_ABI, ACCESS_CORE_ADDRESS } from "@/lib/tokens";
+import { parseUnits, erc20Abi } from "viem";
+import { generateClient } from "aws-amplify/data";
+import type { Schema } from "@/amplify/data/resource";
 import { monadTestnet } from "@/lib/wagmi";
 import { baseSepolia } from "viem/chains";
 import TokenIcon from "../token-registry/TokenIcon";
+
+const client = generateClient<Schema>();
 
 interface UnwrapModalProps {
   isOpen: boolean;
@@ -27,19 +30,20 @@ interface UnwrapModalProps {
   } | null;
 }
 
-type UnwrapStatus = "idle" | "approving" | "unwrapping" | "success" | "error";
+type UnwrapStatus = "idle" | "querying" | "transferring" | "success" | "error";
 
 export default function UnwrapModal({ isOpen, onClose, token }: UnwrapModalProps) {
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState<UnwrapStatus>("idle");
   const [error, setError] = useState<string>("");
+  const [txHash, setTxHash] = useState<string>("");
   const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
 
   const chainId = token?.chain === "base" ? baseSepolia.id : monadTestnet.id;
 
   const handleUnwrap = async () => {
-    if (!token || !address || !amount || !token.originalTokenAddress) return;
+    if (!token || !address || !amount) return;
 
     const numAmount = parseFloat(amount);
     if (numAmount <= 0) {
@@ -47,35 +51,44 @@ export default function UnwrapModal({ isOpen, onClose, token }: UnwrapModalProps
       return;
     }
 
-    setStatus("approving");
+    setStatus("querying");
     setError("");
 
     try {
+      // Step 1: Query deposit address from API
+      const { data: depositData, errors: depositErrors } = await client.queries.queryDepositAddress({
+        chain: token.chain,
+        address: address,
+      });
+
+      if (depositErrors?.length) {
+        setStatus("error");
+        setError(depositErrors[0].message);
+        return;
+      }
+
+      if (!depositData?.success || !depositData?.depositAddress) {
+        setStatus("error");
+        setError(depositData?.error || "Failed to get deposit address");
+        return;
+      }
+
+      const depositAddress = depositData.depositAddress;
+      console.log("Deposit address:", depositAddress);
+
+      setStatus("transferring");
+
+      // Step 2: Transfer aToken to deposit address
       const tokenAmount = parseUnits(amount, token.decimals);
-
-      // Step 1: Approve aUSDC for AccessCore
-      const approveTx = await writeContractAsync({
+      const tx = await writeContractAsync({
         address: token.tokenAddress as `0x${string}`,
-        abi: ERC20_ABI,
-        functionName: "approve",
-        args: [ACCESS_CORE_ADDRESS, tokenAmount],
+        abi: erc20Abi,
+        functionName: "transfer",
+        args: [depositAddress as `0x${string}`, tokenAmount],
         chainId,
       });
 
-      // Wait for approval
-      setStatus("unwrapping");
-
-      // Step 2: Call withdraw on AccessCore
-      const unwrapTx = await writeContractAsync({
-        address: ACCESS_CORE_ADDRESS as `0x${string}`,
-        abi: [
-          "function withdraw(address token, uint256 amount) returns (bool)",
-        ],
-        functionName: "withdraw",
-        args: [token.tokenAddress as `0x${string}`, tokenAmount],
-        chainId,
-      });
-
+      setTxHash(tx);
       setStatus("success");
     } catch (err) {
       setStatus("error");
@@ -87,6 +100,7 @@ export default function UnwrapModal({ isOpen, onClose, token }: UnwrapModalProps
     setStatus("idle");
     setAmount("");
     setError("");
+    setTxHash("");
     onClose();
   };
 
@@ -131,14 +145,14 @@ export default function UnwrapModal({ isOpen, onClose, token }: UnwrapModalProps
                     </div>
                     <ArrowRight size={20} className="text-sub" />
                     <div className="flex items-center gap-3">
-                      <TokenIcon 
-                        icon={token.originalTokenIcon || token.icon} 
-                        symbol={token.originalTokenSymbol || "USDC"} 
-                        chain={token.chain} 
-                        size="md" 
+                      <TokenIcon
+                        icon={token.originalTokenIcon || token.icon}
+                        symbol={token.originalTokenSymbol || "JPYC"}
+                        chain={token.chain}
+                        size="md"
                       />
                       <div>
-                        <p className="text-sm font-medium text-ink">{token.originalTokenSymbol || "USDC"}</p>
+                        <p className="text-sm font-medium text-ink">{token.originalTokenSymbol || "JPYC"}</p>
                         <p className="text-xs text-sub capitalize">{token.chain}</p>
                       </div>
                     </div>
@@ -155,39 +169,56 @@ export default function UnwrapModal({ isOpen, onClose, token }: UnwrapModalProps
                     />
                   </div>
 
+                  <p className="text-xs text-sub mb-4">
+                    Transfer {token.symbol} to the deposit address. {token.originalTokenSymbol || "JPYC"} will arrive in ~1 minute.
+                  </p>
+
                   <button
                     onClick={handleUnwrap}
                     disabled={!amount || parseFloat(amount) <= 0}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Unwrap {token.symbol} to {token.originalTokenSymbol || "USDC"}
+                    Unwrap {token.symbol} to {token.originalTokenSymbol || "JPYC"}
                   </button>
                 </>
               )}
 
-              {status === "approving" && (
+              {status === "querying" && (
                 <div className="text-center py-8">
                   <Loader2 size={40} className="mx-auto text-indigo animate-spin mb-4" />
-                  <p className="text-ink font-medium">Approving {token.symbol}...</p>
-                  <p className="text-sm text-sub mt-1">Please confirm in your wallet</p>
+                  <p className="text-ink font-medium">Querying deposit address...</p>
+                  <p className="text-sm text-sub mt-1">Please wait</p>
                 </div>
               )}
 
-              {status === "unwrapping" && (
+              {status === "transferring" && (
                 <div className="text-center py-8">
                   <Loader2 size={40} className="mx-auto text-indigo animate-spin mb-4" />
-                  <p className="text-ink font-medium">Unwrapping tokens...</p>
-                  <p className="text-sm text-sub mt-1">Processing your unwrap transaction</p>
+                  <p className="text-ink font-medium">Transferring tokens...</p>
+                  <p className="text-sm text-sub mt-1">Please confirm in your wallet</p>
                 </div>
               )}
 
               {status === "success" && (
                 <div className="text-center py-8">
                   <CheckCircle size={40} className="mx-auto text-okgreen mb-4" />
-                  <p className="text-ink font-medium">Tokens unwrapped!</p>
+                  <p className="text-ink font-medium">Transfer submitted!</p>
                   <p className="text-sm text-sub mt-1">
-                    {amount} {token.symbol} → {amount} {token.originalTokenSymbol || "USDC"}
+                    {amount} {token.symbol} sent to deposit address.
                   </p>
+                  <p className="text-sm text-sub mt-2">
+                    {token.originalTokenSymbol || "JPYC"} will arrive in ~1 minute.
+                  </p>
+                  {txHash && (
+                    <a
+                      href={`https://sepolia.basescan.org/tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 mt-3 text-sm text-indigo hover:text-indigo/80"
+                    >
+                      View transaction <ExternalLink size={14} />
+                    </a>
+                  )}
                   <button
                     onClick={handleClose}
                     className="mt-6 w-full px-4 py-2.5 bg-paper border border-hair rounded-lg text-sm font-medium text-ink hover:bg-hair/50 transition-colors"
@@ -200,7 +231,7 @@ export default function UnwrapModal({ isOpen, onClose, token }: UnwrapModalProps
               {status === "error" && (
                 <div className="text-center py-8">
                   <XCircle size={40} className="mx-auto text-red-500 mb-4" />
-                  <p className="text-ink font-medium">Unwrap failed</p>
+                  <p className="text-ink font-medium">Transfer failed</p>
                   <p className="text-sm text-sub mt-1">{error}</p>
                   <button
                     onClick={handleUnwrap}
