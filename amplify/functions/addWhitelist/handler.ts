@@ -30,8 +30,8 @@ function uuid(): string {
 export async function handler(
   event: Schema["addWhitelist"]["functionHandler"]
 ): Promise<{ success: boolean; error?: string }> {
-  const { chain, tokenAddress, walletAddresses } = event.arguments;
-  console.log("Add whitelist:", { chain, tokenAddress, walletAddresses });
+  const { chain, tokenAddress, tokenSymbol, walletAddresses } = event.arguments;
+  console.log("Add whitelist:", { chain, tokenAddress, tokenSymbol, walletAddresses });
 
   try {
     const body = {
@@ -43,7 +43,7 @@ export async function handler(
       addressList: [
         {
           chain,
-          symbol: "jpyc",
+          symbol: tokenSymbol.toLowerCase(),
           assetAddress: tokenAddress,
           walletAddresses: walletAddresses || [],
         },

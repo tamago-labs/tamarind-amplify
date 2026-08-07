@@ -250,6 +250,7 @@ const schema = a.schema({
     .arguments({
       chain: a.string().required(),
       tokenAddress: a.string().required(),
+      tokenSymbol: a.string().required(),
       walletAddresses: a.string().array().required(),
     })
     .returns(a.customType({ success: a.boolean().required(), error: a.string() }))
@@ -261,6 +262,7 @@ const schema = a.schema({
     .arguments({
       chain: a.string().required(),
       tokenAddress: a.string().required(),
+      tokenSymbol: a.string().required(),
       walletAddresses: a.string().array().required(),
       removeReason: a.string(),
     })

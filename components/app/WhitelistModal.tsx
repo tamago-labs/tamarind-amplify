@@ -14,6 +14,7 @@ interface WhitelistModalProps {
   onClose: () => void;
   walletAddress: string;
   chain: string;
+  workspaceId: string;
 }
 
 type WhitelistStatus = "idle" | "loading" | "adding" | "removing" | "success" | "error";
@@ -25,16 +26,22 @@ interface WhitelistEntry {
   status: string | null;
 }
 
-export default function WhitelistModal({ isOpen, onClose, walletAddress, chain }: WhitelistModalProps) {
+export default function WhitelistModal({ isOpen, onClose, walletAddress, chain, workspaceId }: WhitelistModalProps) {
   const [status, setStatus] = useState<WhitelistStatus>("idle");
   const [error, setError] = useState<string>("");
   const [selectedToken, setSelectedToken] = useState("");
   const [entries, setEntries] = useState<WhitelistEntry[]>([]);
 
-  // Get ERC-20 tokens for this chain
+  // Get WRAPPED_TOKEN tokens that can be whitelisted
+  // Use originalTokenAddress (e.g., JPYC) for whitelist
   const availableTokens = DEFAULT_TOKENS.filter(
-    (t) => t.chain === chain && t.tokenType === "ERC20"
+    (t) => t.chain === chain && t.tokenType === "WRAPPED_TOKEN"
   );
+
+  // Get the original token address for whitelist
+  function getWhitelistAddress(token: typeof availableTokens[0]): string {
+    return token.originalTokenAddress || token.tokenAddress;
+  }
 
   useEffect(() => {
     if (isOpen && walletAddress) {
@@ -45,6 +52,9 @@ export default function WhitelistModal({ isOpen, onClose, walletAddress, chain }
   async function loadEntries() {
     setStatus("loading");
     try {
+      // Normalize wallet address for comparison
+      const normalizedAddress = walletAddress.toLowerCase();
+      
       const { data } = await client.models.WhitelistEntry.list({
         filter: {
           walletAddress: { eq: walletAddress },
@@ -52,7 +62,23 @@ export default function WhitelistModal({ isOpen, onClose, walletAddress, chain }
           status: { eq: "active" },
         },
       });
-      setEntries(data || []);
+
+      // Also check with lowercase address
+      const { data: lowercaseData } = await client.models.WhitelistEntry.list({
+        filter: {
+          walletAddress: { eq: normalizedAddress },
+          chain: { eq: chain },
+          status: { eq: "active" },
+        },
+      });
+
+      // Merge and deduplicate
+      const allEntries = [...(data || []), ...(lowercaseData || [])];
+      const uniqueEntries = allEntries.filter((entry, index, self) =>
+        index === self.findIndex((e) => e.id === entry.id)
+      );
+
+      setEntries(uniqueEntries);
     } catch (err) {
       console.error("Error loading entries:", err);
     } finally {
@@ -67,9 +93,20 @@ export default function WhitelistModal({ isOpen, onClose, walletAddress, chain }
     setError("");
 
     try {
+      const token = availableTokens.find((t) => t.tokenAddress === selectedToken);
+      if (!token) {
+        setStatus("error");
+        setError("Token not found");
+        return;
+      }
+
+      // Get the address to whitelist (original token for wrapped, token address for ERC-20)
+      const whitelistAddress = getWhitelistAddress(token);
+
       const { data, errors } = await client.mutations.addWhitelist({
         chain,
-        tokenAddress: selectedToken,
+        tokenAddress: whitelistAddress,
+        tokenSymbol: token.originalTokenSymbol || token.symbol,
         walletAddresses: [walletAddress],
       });
 
@@ -78,13 +115,12 @@ export default function WhitelistModal({ isOpen, onClose, walletAddress, chain }
         setError(errors[0].message);
       } else if (data?.success) {
         // Save to database
-        const token = availableTokens.find((t) => t.tokenAddress === selectedToken);
         await client.models.WhitelistEntry.create({
-          workspaceId: "current",
+          workspaceId,
           walletAddress,
           chain,
-          tokenAddress: selectedToken,
-          tokenSymbol: token?.symbol || "Unknown",
+          tokenAddress: whitelistAddress,
+          tokenSymbol: token.symbol,
           status: "active",
           addedAt: new Date().toISOString(),
           addedBy: "current-user",
@@ -111,6 +147,7 @@ export default function WhitelistModal({ isOpen, onClose, walletAddress, chain }
       const { data, errors } = await client.mutations.removeWhitelist({
         chain,
         tokenAddress: entry.tokenAddress,
+        tokenSymbol: entry.tokenSymbol || "",
         walletAddresses: [walletAddress],
         removeReason: "Removed by admin",
       });

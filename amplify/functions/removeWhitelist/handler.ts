@@ -30,15 +30,15 @@ function uuid(): string {
 export async function handler(
   event: Schema["removeWhitelist"]["functionHandler"]
 ): Promise<{ success: boolean; error?: string }> {
-  const { chain, tokenAddress, walletAddresses, removeReason } = event.arguments;
-  console.log("Remove whitelist:", { chain, tokenAddress, walletAddresses, removeReason });
+  const { chain, tokenAddress, tokenSymbol, walletAddresses, removeReason } = event.arguments;
+  console.log("Remove whitelist:", { chain, tokenAddress, tokenSymbol, walletAddresses, removeReason });
 
   try {
     const body: any = {
       addressList: [
         {
           chain,
-          symbol: "jpyc",
+          symbol: tokenSymbol.toLowerCase(),
           assetAddress: tokenAddress,
           walletAddresses: walletAddresses || [],
         },
