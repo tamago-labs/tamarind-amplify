@@ -24,25 +24,24 @@ interface TokenBalance {
 interface TokenBalancesProps {
   workspaceId: string;
   walletAddress?: string;
+  connectedChain?: string;
 }
 
-export default function TokenBalances({ workspaceId, walletAddress }: TokenBalancesProps) {
+export default function TokenBalances({ workspaceId, walletAddress, connectedChain }: TokenBalancesProps) {
   const [balances, setBalances] = useState<TokenBalance[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeChain, setActiveChain] = useState<string>("monad");
 
   useEffect(() => {
     loadBalances();
-  }, [workspaceId, walletAddress]);
+  }, [workspaceId]);
 
   useEffect(() => {
     // When wallet connects, switch to connected chain
-    if (walletAddress) {
-      // In production, detect chain from wallet
-      // For now, default to monad when connected
-      setActiveChain("monad");
+    if (connectedChain && SUPPORTED_CHAINS.some((c) => c.id === connectedChain)) {
+      setActiveChain(connectedChain);
     }
-  }, [walletAddress]);
+  }, [connectedChain]);
 
   async function loadBalances() {
     try {
@@ -99,13 +98,11 @@ export default function TokenBalances({ workspaceId, walletAddress }: TokenBalan
   function getActions(token: TokenBalance) {
     const actions = [];
 
-    // All tokens can Send and Receive
     actions.push(
       { label: "Send", onClick: () => console.log("Send", token) },
       { label: "Receive", onClick: () => console.log("Receive", token) }
     );
 
-    // A-Tokens (wrapped) can also Wrap/Unwrap
     if (token.tokenType === "WRAPPED_TOKEN") {
       actions.push(
         { label: "Wrap", onClick: () => console.log("Wrap", token) },
@@ -128,7 +125,7 @@ export default function TokenBalances({ workspaceId, walletAddress }: TokenBalan
 
   return (
     <div className="bg-white border border-hair rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-hair flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-hair flex items-center justify-between">
         <h3 className="text-lg font-semibold text-ink">Token Balances</h3>
         <div className="flex items-center gap-1 bg-paper rounded-lg p-1">
           {SUPPORTED_CHAINS.map((chain) => (
