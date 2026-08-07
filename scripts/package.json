@@ -8,6 +8,7 @@
     "2-query-apass": "tsx 2-query-apass.ts",
     "3-query-tokens": "tsx 3-query-tokens.ts",
     "4-launch-atoken": "tsx 4-launch-atoken.ts",
+    "4b-launch-wrapped-atoken": "tsx 4b-launch-wrapped-atoken.ts",
     "5-query-status": "tsx 5-query-status.ts",
     "6-list-atokens": "tsx 6-list-atokens.ts",
     "7-add-rule": "tsx 7-add-rule.ts",
@@ -32,7 +33,9 @@
     "26-validator-verify": "tsx 26-validator-verify.ts",
     "27-validator-set-paused": "tsx 27-validator-set-paused.ts",
     "28-validator-is-paused": "tsx 28-validator-is-paused.ts",
-    "30-wrap": "tsx 30-wrap.ts"
+    "29-wrap": "tsx 29-wrap.ts",
+    "30-grant-accesscore": "tsx 30-grant-accesscore.ts",
+    "31-add-whitelist": "tsx 31-add-whitelist.ts"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",

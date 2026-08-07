@@ -21,8 +21,8 @@ type WhitelistStatus = "idle" | "loading" | "adding" | "removing" | "success" | 
 interface WhitelistEntry {
   id: string;
   tokenAddress: string;
-  tokenSymbol: string;
-  status: string;
+  tokenSymbol: string | null;
+  status: string | null;
 }
 
 export default function WhitelistModal({ isOpen, onClose, walletAddress, chain }: WhitelistModalProps) {
