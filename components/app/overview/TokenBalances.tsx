@@ -7,6 +7,7 @@ import { DEFAULT_TOKENS, SUPPORTED_CHAINS, formatTokenBalance } from "@/config/t
 import TokenIcon from "../token-registry/TokenIcon";
 import TokenActions from "./TokenActions";
 import { useWallet } from "../WalletProvider";
+import { useAccount } from "wagmi";
 
 const client = generateClient<Schema>();
 
@@ -30,18 +31,30 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
   const [balances, setBalances] = useState<TokenBalance[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeChain, setActiveChain] = useState<string>("monad");
-  const { chain: walletChain } = useWallet();
+  const { chain: walletChain, connected } = useWallet();
+  const { chainId } = useAccount();
 
   useEffect(() => {
     loadBalances();
   }, [workspaceId]);
 
   useEffect(() => {
-    // When wallet connects, switch to connected chain
-    if (walletChain && SUPPORTED_CHAINS.some((c) => c.id === walletChain)) {
-      setActiveChain(walletChain);
+    console.log("Chain changed - walletChain:", walletChain, "chainId:", chainId, "connected:", connected);
+    
+    // Map chainId to our chain names
+    let detectedChain: string | null = null;
+    if (chainId === 8453 || chainId === 84531) {
+      detectedChain = "base";
+    } else if (chainId === 10143) {
+      detectedChain = "monad";
     }
-  }, [walletChain]);
+    
+    // When wallet connects or chain changes, switch to connected chain
+    if (connected && detectedChain) {
+      console.log("Setting active chain to:", detectedChain);
+      setActiveChain(detectedChain);
+    }
+  }, [walletChain, connected, chainId]);
 
   async function loadBalances() {
     try {
