@@ -7,6 +7,7 @@ import { DEFAULT_TOKENS, SUPPORTED_CHAINS, formatTokenBalance, getTokenTypeLabel
 import TokenIcon from "../token-registry/TokenIcon";
 import TokenActions from "./TokenActions";
 import FaucetModal from "./FaucetModal";
+import JPYCFaucetModal from "./JPYCFaucetModal";
 import WrapModal from "./WrapModal";
 import UnwrapModal from "./UnwrapModal";
 import { useWallet } from "../WalletProvider";
@@ -72,7 +73,10 @@ function BalanceFetcher({
 
   const { data } = useReadContracts({
     contracts,
-    query: { enabled: !!address && contracts.length > 0 },
+    query: { 
+      enabled: !!address && contracts.length > 0,
+      refetchInterval: 60000, // Refetch every 60 seconds to avoid rate limits
+    },
   });
 
   useEffect(() => {
@@ -105,6 +109,8 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
   const [showWrapModal, setShowWrapModal] = useState(false);
   const [unwrapToken, setUnwrapToken] = useState<TokenBalance | null>(null);
   const [showUnwrapModal, setShowUnwrapModal] = useState(false);
+  const [jpycToken, setJpycToken] = useState<TokenBalance | null>(null);
+  const [showJpycFaucetModal, setShowJpycFaucetModal] = useState(false);
   const { chain: walletChain, connected } = useWallet();
   const { chainId } = useAccount();
 
@@ -222,11 +228,6 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
       );
     }
 
-    actions.push(
-      { label: "Send", onClick: () => console.log("Send", token) },
-      { label: "Receive", onClick: () => console.log("Receive", token) }
-    );
-
     return actions;
   }
 
@@ -324,6 +325,19 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
                         Faucet
                       </button>
                     )}
+                    {token.name === "JPYC Mock" && (
+                      <button
+                        onClick={() => {
+                          setJpycToken(token);
+                          setShowJpycFaucetModal(true);
+                        }}
+                        className="flex items-center gap-1 text-sm text-indigo hover:text-indigo/80 transition-colors"
+                        title="Get testnet JPYC"
+                      >
+                        <Droplets size={14} />
+                        Faucet
+                      </button>
+                    )}
                     <TokenActions actions={getActions(token)} />
                   </div>
                 </td>
@@ -346,6 +360,15 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
           setFaucetToken(null);
         }}
         token={faucetToken}
+      />
+
+      <JPYCFaucetModal
+        isOpen={showJpycFaucetModal}
+        onClose={() => {
+          setShowJpycFaucetModal(false);
+          setJpycToken(null);
+        }}
+        token={jpycToken}
       />
 
       <WrapModal

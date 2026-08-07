@@ -40,7 +40,7 @@ export default function TokenActions({ actions }: TokenActionsProps) {
     }
   }, [isOpen]);
 
-  if (actions.length === 0) return <span className="text-sub text-sm">—</span>;
+  if (actions.length === 0) return null;
 
   if (actions.length === 1) {
     return (
