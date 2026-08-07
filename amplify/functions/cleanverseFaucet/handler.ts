@@ -13,6 +13,9 @@ const client = generateClient<Schema>();
 const API_ID = env.CLEANVERSE_API_ID;
 const BASE_URL = env.CLEANVERSE_BASE_URL;
 
+console.log("Lambda env loaded. API_ID:", API_ID ? "SET" : "MISSING");
+console.log("BASE_URL:", BASE_URL);
+
 function uuid(): string {
   return crypto.randomUUID();
 }
@@ -26,14 +29,13 @@ export async function handler(
 
   try {
     const body = {
-      InstitutionFaucetReq: {
-        Chain: chain,
-        Symbol: "usdc",
-        DepositAddress: depositAddress,
-        Amount: amount || "5",
-      }
+      chain: chain,
+      symbol: "usdc",
+      depositAddress: depositAddress,
+      amount: amount || "5",
     };
     console.log("Request body:", JSON.stringify(body));
+    console.log("Body keys:", Object.keys(body));
 
     const url = `${BASE_URL}/faucet`;
     const headers: Record<string, string> = {
@@ -42,7 +44,8 @@ export async function handler(
       "X-Request-ID": uuid(),
     };
 
-    console.log("Sending request to:", url);
+    console.log("Sending to:", url);
+    console.log("Headers:", JSON.stringify(headers));
     const res = await fetch(url, {
       method: "POST",
       headers,
