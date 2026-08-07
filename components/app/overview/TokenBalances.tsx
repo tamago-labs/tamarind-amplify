@@ -6,12 +6,14 @@ import type { Schema } from "@/amplify/data/resource";
 import { DEFAULT_TOKENS, SUPPORTED_CHAINS, formatTokenBalance, getTokenTypeLabel } from "@/config/tokens";
 import TokenIcon from "../token-registry/TokenIcon";
 import TokenActions from "./TokenActions";
+import FaucetModal from "./FaucetModal";
 import { useWallet } from "../WalletProvider";
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useReadContracts } from "wagmi";
 import { networkIcons } from "@web3icons/react";
 import { erc20Abi, formatUnits } from "viem";
 import { monadTestnet } from "@/lib/wagmi";
 import { baseSepolia } from "viem/chains";
+import { Droplets } from "lucide-react";
 
 const client = generateClient<Schema>();
 
@@ -42,11 +44,58 @@ interface TokenBalancesProps {
   workspaceId: string;
 }
 
+function BalanceFetcher({
+  tokens,
+  onBalancesFetched,
+}: {
+  tokens: TokenBalance[];
+  onBalancesFetched: (balances: Record<string, string>) => void;
+}) {
+  const { address } = useWallet();
+  const { chainId } = useAccount();
+
+  const contracts = tokens
+    .filter((t) => t.chain === (chainId === 8453 || chainId === 84531 || chainId === 84532 ? "base" : "monad"))
+    .map((token) => ({
+      address: token.tokenAddress as `0x${string}`,
+      abi: erc20Abi,
+      functionName: "balanceOf" as const,
+      args: [address as `0x${string}`],
+      chainId: chainIdMap[token.chain] || monadTestnet.id,
+    }));
+
+  const { data } = useReadContracts({
+    contracts,
+    query: { enabled: !!address && contracts.length > 0 },
+  });
+
+  useEffect(() => {
+    if (data) {
+      const balanceMap: Record<string, string> = {};
+      const filteredTokens = tokens.filter(
+        (t) => t.chain === (chainId === 8453 || chainId === 84531 || chainId === 84532 ? "base" : "monad")
+      );
+      data.forEach((result, index) => {
+        if (result.status === "success" && filteredTokens[index]) {
+          const token = filteredTokens[index];
+          const rawBalance = result.result as bigint;
+          balanceMap[`${token.tokenAddress}-${token.chain}`] = formatUnits(rawBalance, token.decimals);
+        }
+      });
+      onBalancesFetched(balanceMap);
+    }
+  }, [data, tokens, chainId, onBalancesFetched]);
+
+  return null;
+}
+
 export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
   const [balances, setBalances] = useState<TokenBalance[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeChain, setActiveChain] = useState<string>("monad");
-  const { chain: walletChain, connected, address } = useWallet();
+  const [faucetToken, setFaucetToken] = useState<TokenBalance | null>(null);
+  const [showFaucetModal, setShowFaucetModal] = useState(false);
+  const { chain: walletChain, connected } = useWallet();
   const { chainId } = useAccount();
 
   useEffect(() => {
@@ -54,17 +103,13 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
   }, [workspaceId]);
 
   useEffect(() => {
-    console.log("Chain changed - walletChain:", walletChain, "chainId:", chainId, "connected:", connected);
-    
     let detectedChain: string | null = null;
     if (chainId === 8453 || chainId === 84531 || chainId === 84532) {
       detectedChain = "base";
     } else if (chainId === 10143) {
       detectedChain = "monad";
     }
-    
     if (connected && detectedChain) {
-      console.log("Setting active chain to:", detectedChain);
       setActiveChain(detectedChain);
     }
   }, [walletChain, connected, chainId]);
@@ -123,6 +168,24 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
     }
   }
 
+  const handleBalancesFetched = (balanceMap: Record<string, string>) => {
+    setBalances((prev) =>
+      prev.map((token) => {
+        const key = `${token.tokenAddress}-${token.chain}`;
+        const balance = balanceMap[key];
+        if (balance !== undefined) {
+          const numBalance = parseFloat(balance);
+          return {
+            ...token,
+            balance,
+            value: `$${numBalance.toFixed(2)}`,
+          };
+        }
+        return token;
+      })
+    );
+  };
+
   function getActions(token: TokenBalance) {
     const actions = [];
 
@@ -153,6 +216,8 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
 
   return (
     <div className="bg-white border border-hair rounded-xl overflow-hidden">
+      <BalanceFetcher tokens={balances} onBalancesFetched={handleBalancesFetched} />
+
       <div className="px-6 py-4 border-b border-hair flex items-center justify-between">
         <h3 className="text-lg font-semibold text-ink">Token Balances</h3>
         <div className="flex items-center gap-1 bg-paper rounded-lg p-1">
@@ -220,7 +285,22 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
                   <span className="text-sm font-medium text-ink">{token.value}</span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <TokenActions actions={getActions(token)} />
+                  <div className="flex items-center justify-end gap-3">
+                    {token.symbol === "USDC" && (
+                      <button
+                        onClick={() => {
+                          setFaucetToken(token);
+                          setShowFaucetModal(true);
+                        }}
+                        className="flex items-center gap-1 text-sm text-indigo hover:text-indigo/80 transition-colors"
+                        title="Get testnet USDC"
+                      >
+                        <Droplets size={14} />
+                        Faucet
+                      </button>
+                    )}
+                    <TokenActions actions={getActions(token)} />
+                  </div>
                 </td>
               </tr>
             ))}
@@ -234,6 +314,15 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
           </tbody>
         </table>
       </div>
+
+      <FaucetModal
+        isOpen={showFaucetModal}
+        onClose={() => {
+          setShowFaucetModal(false);
+          setFaucetToken(null);
+        }}
+        token={faucetToken}
+      />
     </div>
   );
 }
