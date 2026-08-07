@@ -3,18 +3,26 @@
 import { useState, useEffect } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
-import { DEFAULT_TOKENS, SUPPORTED_CHAINS, formatTokenBalance } from "@/config/tokens";
+import { DEFAULT_TOKENS, SUPPORTED_CHAINS, formatTokenBalance, getTokenTypeLabel } from "@/config/tokens";
 import TokenIcon from "../token-registry/TokenIcon";
 import TokenActions from "./TokenActions";
 import { useWallet } from "../WalletProvider";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { networkIcons } from "@web3icons/react";
+import { erc20Abi, formatUnits } from "viem";
+import { monadTestnet } from "@/lib/wagmi";
+import { baseSepolia } from "viem/chains";
 
 const client = generateClient<Schema>();
 
 const chainIcons: Record<string, React.ComponentType<any>> = {
   base: networkIcons.NetworkBase,
   monad: networkIcons.NetworkMonad,
+};
+
+const chainIdMap: Record<string, number> = {
+  base: baseSepolia.id,
+  monad: monadTestnet.id,
 };
 
 interface TokenBalance {
@@ -27,6 +35,7 @@ interface TokenBalance {
   decimals: number;
   tokenType: string;
   tokenAddress: string;
+  value: string;
 }
 
 interface TokenBalancesProps {
@@ -37,17 +46,16 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
   const [balances, setBalances] = useState<TokenBalance[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeChain, setActiveChain] = useState<string>("monad");
-  const { chain: walletChain, connected } = useWallet();
+  const { chain: walletChain, connected, address } = useWallet();
   const { chainId } = useAccount();
 
   useEffect(() => {
-    loadBalances();
+    loadTokens();
   }, [workspaceId]);
 
   useEffect(() => {
     console.log("Chain changed - walletChain:", walletChain, "chainId:", chainId, "connected:", connected);
     
-    // Map chainId to our chain names
     let detectedChain: string | null = null;
     if (chainId === 8453 || chainId === 84531 || chainId === 84532) {
       detectedChain = "base";
@@ -55,14 +63,13 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
       detectedChain = "monad";
     }
     
-    // When wallet connects or chain changes, switch to connected chain
     if (connected && detectedChain) {
       console.log("Setting active chain to:", detectedChain);
       setActiveChain(detectedChain);
     }
   }, [walletChain, connected, chainId]);
 
-  async function loadBalances() {
+  async function loadTokens() {
     try {
       const { data: workspaceTokens } = await client.models.WorkspaceToken.list({
         filter: { workspaceId: { eq: workspaceId } },
@@ -81,7 +88,7 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
         })),
       ];
 
-      const balancesWithPlaceholder = allTokens.map((token) => ({
+      const tokensWithBalance = allTokens.map((token) => ({
         id: token.id,
         name: token.name,
         symbol: token.symbol,
@@ -91,11 +98,12 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
         decimals: token.decimals,
         tokenType: token.tokenType,
         tokenAddress: token.tokenAddress,
+        value: "$0.00",
       }));
 
-      setBalances(balancesWithPlaceholder);
+      setBalances(tokensWithBalance);
     } catch (error) {
-      console.error("Error loading balances:", error);
+      console.error("Error loading tokens:", error);
       setBalances(
         DEFAULT_TOKENS.map((t, i) => ({
           id: `default-${i}`,
@@ -107,6 +115,7 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
           decimals: t.decimals,
           tokenType: t.tokenType,
           tokenAddress: t.tokenAddress,
+          value: "$0.00",
         }))
       );
     } finally {
@@ -117,17 +126,17 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
   function getActions(token: TokenBalance) {
     const actions = [];
 
-    actions.push(
-      { label: "Send", onClick: () => console.log("Send", token) },
-      { label: "Receive", onClick: () => console.log("Receive", token) }
-    );
-
     if (token.tokenType === "WRAPPED_TOKEN") {
       actions.push(
         { label: "Wrap", onClick: () => console.log("Wrap", token) },
         { label: "Unwrap", onClick: () => console.log("Unwrap", token) }
       );
     }
+
+    actions.push(
+      { label: "Send", onClick: () => console.log("Send", token) },
+      { label: "Receive", onClick: () => console.log("Receive", token) }
+    );
 
     return actions;
   }
@@ -167,52 +176,64 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
         </div>
       </div>
 
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-hair">
-            <th className="px-6 py-3 text-left text-sm font-medium text-sub">Token</th>
-            <th className="px-6 py-3 text-left text-sm font-medium text-sub">Chain</th>
-            <th className="px-6 py-3 text-right text-sm font-medium text-sub">Balance</th>
-            <th className="px-6 py-3 text-right text-sm font-medium text-sub">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredBalances.map((token) => (
-            <tr
-              key={`${token.id}-${token.chain}`}
-              className="border-b border-hair/50 last:border-0 hover:bg-paper/50"
-            >
-              <td className="px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <TokenIcon icon={token.icon} symbol={token.symbol} chain={token.chain} size="sm" />
-                  <div>
-                    <p className="text-sm font-medium text-ink">{token.symbol}</p>
-                    <p className="text-xs text-sub">{token.name}</p>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-hair">
+              <th className="px-6 py-3 text-left text-sm font-medium text-sub">Token</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-sub">Type</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-sub">Chain</th>
+              <th className="px-6 py-3 text-right text-sm font-medium text-sub">Balance</th>
+              <th className="px-6 py-3 text-right text-sm font-medium text-sub">Value</th>
+              <th className="px-6 py-3 text-right text-sm font-medium text-sub">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredBalances.map((token) => (
+              <tr
+                key={`${token.id}-${token.chain}`}
+                className="border-b border-hair/50 last:border-0 hover:bg-paper/50"
+              >
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <TokenIcon icon={token.icon} symbol={token.symbol} chain={token.chain} size="sm" />
+                    <div>
+                      <p className="text-sm font-medium text-ink">{token.symbol}</p>
+                      <p className="text-xs text-sub">{token.name}</p>
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td className="px-6 py-4">
-                <span className="text-sm text-ink capitalize">{token.chain}</span>
-              </td>
-              <td className="px-6 py-4 text-right">
-                <span className="text-sm font-medium text-ink">
-                  {formatTokenBalance(token.balance, token.decimals)} {token.symbol}
-                </span>
-              </td>
-              <td className="px-6 py-4 text-right">
-                <TokenActions actions={getActions(token)} />
-              </td>
-            </tr>
-          ))}
-          {filteredBalances.length === 0 && (
-            <tr>
-              <td colSpan={4} className="px-6 py-8 text-center text-sub text-sm">
-                No tokens found for this network.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="inline-block text-xs font-medium text-sub bg-paper rounded-full px-2.5 py-1">
+                    {getTokenTypeLabel(token.tokenType)}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="text-sm text-ink capitalize">{token.chain}</span>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <span className="text-sm font-medium text-ink">
+                    {formatTokenBalance(token.balance, token.decimals)} {token.symbol}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <span className="text-sm font-medium text-ink">{token.value}</span>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <TokenActions actions={getActions(token)} />
+                </td>
+              </tr>
+            ))}
+            {filteredBalances.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-6 py-8 text-center text-sub text-sm">
+                  No tokens found for this network.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

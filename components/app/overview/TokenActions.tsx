@@ -14,17 +14,30 @@ interface TokenActionsProps {
 
 export default function TokenActions({ actions }: TokenActionsProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 4,
+        right: window.innerWidth - rect.right,
+      });
+    }
+  }, [isOpen]);
 
   if (actions.length === 0) return <span className="text-sub text-sm">—</span>;
 
@@ -40,8 +53,9 @@ export default function TokenActions({ actions }: TokenActionsProps) {
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative">
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1 text-sm text-indigo hover:text-indigo/80 transition-colors"
       >
@@ -50,7 +64,11 @@ export default function TokenActions({ actions }: TokenActionsProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1 bg-panel border border-hair rounded-lg shadow-lg py-1 z-50 min-w-[120px]">
+        <div
+          ref={dropdownRef}
+          className="fixed bg-panel border border-hair rounded-lg shadow-lg py-1 z-50 min-w-[120px]"
+          style={{ top: dropdownPosition.top, right: dropdownPosition.right }}
+        >
           {actions.map((action) => (
             <button
               key={action.label}
