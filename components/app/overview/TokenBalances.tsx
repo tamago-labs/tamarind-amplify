@@ -116,7 +116,7 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
   const [showUnwrapModal, setShowUnwrapModal] = useState(false);
   const [jpycToken, setJpycToken] = useState<TokenBalance | null>(null);
   const [showJpycFaucetModal, setShowJpycFaucetModal] = useState(false);
-  const { chain: walletChain, connected } = useWallet();
+  const { chain: walletChain, connected, address } = useWallet();
   const { chainId } = useAccount();
 
   useEffect(() => {
