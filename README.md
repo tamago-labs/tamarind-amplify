@@ -124,6 +124,22 @@ Send and receive USDC across 20+ chains. Cross-chain transfers powered by Circle
 
 ---
 
+## Deployment
+
+### Base Sepolia
+
+| Contract | Address |
+|----------|---------|
+| JPYCMock | `0xc4d91B769f0bD8aF2BF7F02862Cd233e62C139d4` |
+
+### Monad Testnet
+
+| Contract | Address |
+|----------|---------|
+| JPYCMock | `0x9465a4C246D44F32F391Ebda165Acb12886746Ca` |
+
+---
+
 ## Getting Started
 
 ```bash

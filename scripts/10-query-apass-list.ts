@@ -1,67 +1,62 @@
 import { apiRequest, uuid, type QueryAPassListResponse } from "./utils/setup.js"
 
-const params = new URLSearchParams({
-  page: "1",
-  pageSize: "20",
-})
+const PAGE_SIZE = 100
 
-console.log("=== 10. Query A-Pass List ===")
-console.log("Listing all A-Pass registrations...\n")
+async function fetchAllAPasses() {
+  let page = 1
+  let allItems: any[] = []
+  let total = 0
 
-await apiRequest<QueryAPassListResponse>("POST", "/query_apass_list", {
-  page: 1,
-  pageSize: 20,
-}, {
-  requestId: uuid(),
-})
+  console.log("=== 10. Query A-Pass List (All Pages) ===\n")
 
-// === 10. Query A-Pass List ===
-// Listing all A-Pass registrations...
+  do {
+    console.log(`Fetching page ${page}...`)
+
+    const response = await apiRequest<QueryAPassListResponse>("POST", "/query_apass_list", {
+      page,
+      pageSize: PAGE_SIZE,
+    }, {
+      requestId: uuid(),
+    })
+
+    if (response.code !== "0000") {
+      console.log("Error:", response.message)
+      break
+    }
+
+    total = response.data.total
+    const items = response.data.items || []
+    allItems = allItems.concat(items)
+
+    console.log(`  Got ${items.length} items (total so far: ${allItems.length}/${total})`)
+
+    page++
+  } while (allItems.length < total)
+
+  console.log(`\n=== Summary ===`)
+  console.log(`Total A-Passes: ${total}`)
+  console.log(`Fetched: ${allItems.length}`)
+  console.log()
+
+  // Group by chain
+  const byChain: Record<string, number> = {}
+  for (const item of allItems) {
+    byChain[item.chain] = (byChain[item.chain] || 0) + 1
+  }
+  console.log("By chain:")
+  for (const [chain, count] of Object.entries(byChain)) {
+    console.log(`  ${chain}: ${count}`)
+  }
+  console.log()
+
+  // Show first 5 as sample
+  console.log("Sample (first 5):")
+  for (const item of allItems.slice(0, 5)) {
+    console.log(`  ${item.customerId} | ${item.chain} | ${item.walletAddress.slice(0, 10)}... | tier ${item.tier}`)
+  }
+}
+
+fetchAllAPasses()
 
 
-// ▸ POST /query_apass_list
-// {
-//   "code": "0000",
-//   "message": "success",
-//   "data": {
-//     "total": 99,
-//     "pageSize": 20,
-//     "page": 1,
-//     "items": [
-//       {
-//         "cvRecordId": "594",
-//         "customerId": "TAMARINDUSER001",
-//         "chain": "base",
-//         "walletAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0",
-//         "apassAddress": "",
-//         "status": null,
-//         "tier": "50",
-//         "subTier": 9,
-//         "group": null,
-//         "subGroup": "CD",
-//         "countries": [
-//           "US"
-//         ],
-//         "expirationTime": 1863690034,
-//         "txHash": "0x27e8050f38cdea005b455012ac70933fcd8cf430691b4327949e965911f62859",
-//         "registeredAt": "2026-07-27T17:34:33"
-//       },
-//       {
-//         "cvRecordId": "593",
-//         "customerId": "CCMALLORY20001MONAD",
-//         "chain": "monad",
-//         "walletAddress": "0xa49DC72C5EF423Cc0E7270b816e4dac462A6E721",
-//         "apassAddress": "",
-//         "status": 1,
-//         "tier": "50",
-//         "subTier": 20,
-//         "group": null,
-//         "subGroup": "CC",
-//         "countries": [
-//           "SG"
-//         ],
-//         "expirationTime": 1893456000,
-//         "txHash": "0xa5f3b1fa5aae6fde0022f222d00eaa6373ba2521cc2a51e3939c3be0b591261f",
-//         "registeredAt": "2026-07-27T17:25:12"
-//       },
-//       {
+

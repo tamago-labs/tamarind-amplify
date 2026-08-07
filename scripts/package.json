@@ -31,7 +31,8 @@
     "25-validator-add-rule": "tsx 25-validator-add-rule.ts",
     "26-validator-verify": "tsx 26-validator-verify.ts",
     "27-validator-set-paused": "tsx 27-validator-set-paused.ts",
-    "28-validator-is-paused": "tsx 28-validator-is-paused.ts"
+    "28-validator-is-paused": "tsx 28-validator-is-paused.ts",
+    "30-wrap": "tsx 30-wrap.ts"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
