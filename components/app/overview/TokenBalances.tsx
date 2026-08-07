@@ -43,7 +43,7 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
     
     // Map chainId to our chain names
     let detectedChain: string | null = null;
-    if (chainId === 8453 || chainId === 84531) {
+    if (chainId === 8453 || chainId === 84531 || chainId === 84532) {
       detectedChain = "base";
     } else if (chainId === 10143) {
       detectedChain = "monad";

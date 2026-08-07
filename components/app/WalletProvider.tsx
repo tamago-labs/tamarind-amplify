@@ -20,10 +20,11 @@ export function useWallet() {
 
 function mapChainIdToName(chainId: number | undefined): string | null {
   if (!chainId) return null;
-  // Base Sepolia: 84531, Base: 8453, Monad: 10143
+  // Base: 8453, Base Sepolia: 84531, Base Sepolia (alt): 84532, Monad: 10143
   switch (chainId) {
     case 8453:
     case 84531:
+    case 84532:
       return "base";
     case 10143:
       return "monad";
