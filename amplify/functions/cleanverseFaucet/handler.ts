@@ -26,10 +26,12 @@ export async function handler(
 
   try {
     const body = {
-      Chain: chain,
-      Symbol: "usdc",
-      DepositAddress: depositAddress,
-      Amount: amount || "5",
+      InstitutionFaucetReq: {
+        Chain: chain,
+        Symbol: "usdc",
+        DepositAddress: depositAddress,
+        Amount: amount || "5",
+      }
     };
     console.log("Request body:", JSON.stringify(body));
 

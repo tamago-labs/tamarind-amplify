@@ -49,7 +49,12 @@ export default function FaucetModal({ isOpen, onClose, token }: FaucetModalProps
         setTxHash(data.txHash || "");
       } else {
         setStatus("error");
-        setError(data?.error || "Faucet request failed");
+        const errorMsg = data?.error || "Faucet request failed";
+        if (errorMsg.includes("exceeds limit")) {
+          setError("Rate limit reached. You can request 20 USDC per 24 hours per wallet.");
+        } else {
+          setError(errorMsg);
+        }
       }
     } catch (err) {
       setStatus("error");
