@@ -4,6 +4,7 @@ import { cleanverseFaucet } from "../functions/cleanverseFaucet/resource.js";
 import { queryDepositAddress } from "../functions/queryDepositAddress/resource.js";
 import { addWhitelist } from "../functions/addWhitelist/resource.js";
 import { removeWhitelist } from "../functions/removeWhitelist/resource.js";
+import { queryTokenRules } from "../functions/queryTokenRules/resource.js";
 
 const apassStatus = a.customType({
   workspaceIdentityId: a.id(),
@@ -269,7 +270,17 @@ const schema = a.schema({
     .returns(a.customType({ success: a.boolean().required(), error: a.string() }))
     .handler(a.handler.function(removeWhitelist))
     .authorization((allow) => [allow.authenticated()]),
-}).authorization((allow) => [allow.resource(cleanverseIdentity), allow.resource(cleanverseFaucet), allow.resource(queryDepositAddress), allow.resource(addWhitelist), allow.resource(removeWhitelist)]);
+
+  queryTokenRules: a
+    .query()
+    .arguments({
+      chain: a.string().required(),
+      tokenAddress: a.string().required(),
+    })
+    .returns(a.customType({ success: a.boolean().required(), rules: a.string(), error: a.string() }))
+    .handler(a.handler.function(queryTokenRules))
+    .authorization((allow) => [allow.authenticated()]),
+}).authorization((allow) => [allow.resource(cleanverseIdentity), allow.resource(cleanverseFaucet), allow.resource(queryDepositAddress), allow.resource(addWhitelist), allow.resource(removeWhitelist), allow.resource(queryTokenRules)]);
 
 export type Schema = ClientSchema<typeof schema>;
 

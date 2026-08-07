@@ -45,6 +45,11 @@ interface TokenBalance {
   originalTokenName?: string;
   originalTokenSymbol?: string;
   originalTokenIcon?: string;
+  isWhitelisted?: boolean;
+  eligibility?: {
+    minTier: number;
+    countries: string[];
+  };
 }
 
 interface TokenBalancesProps {
@@ -167,6 +172,9 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
       }));
 
       setBalances(tokensWithBalance);
+
+      // Fetch whitelist and eligibility data for each token
+      await fetchTokenMetadata(tokensWithBalance);
     } catch (error) {
       console.error("Error loading tokens:", error);
       setBalances(
@@ -205,6 +213,61 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
       })
     );
   }, []);
+
+  async function fetchTokenMetadata(tokens: TokenBalance[]) {
+    // Fetch whitelist entries for this workspace
+    const { data: whitelistEntries } = await client.models.WhitelistEntry.list({
+      filter: {
+        workspaceId: { eq: workspaceId },
+        status: { eq: "active" },
+      },
+    });
+
+    // Fetch eligibility rules for each wrapped token
+    const wrappedTokens = tokens.filter((t) => t.tokenType === "WRAPPED_TOKEN");
+    const eligibilityMap: Record<string, { minTier: number; countries: string[] }> = {};
+
+    for (const token of wrappedTokens) {
+      try {
+        const { data: rulesData } = await client.queries.queryTokenRules({
+          chain: token.chain,
+          tokenAddress: token.tokenAddress,
+        });
+
+        if (rulesData?.success && rulesData?.rules) {
+          const rules = JSON.parse(rulesData.rules);
+          if (rules.length > 0) {
+            eligibilityMap[token.tokenAddress] = {
+              minTier: rules[0].min_tier || 0,
+              countries: rules[0].countries || [],
+            };
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching rules for", token.symbol, err);
+      }
+    }
+
+    // Update balances with whitelist and eligibility status
+    setBalances((prev) =>
+      prev.map((token) => {
+        const isWhitelisted = (whitelistEntries || []).some(
+          (entry) =>
+            entry.walletAddress?.toLowerCase() === address?.toLowerCase() &&
+            entry.chain === token.chain &&
+            entry.tokenAddress === token.originalTokenAddress
+        );
+
+        const eligibility = eligibilityMap[token.tokenAddress];
+
+        return {
+          ...token,
+          isWhitelisted,
+          eligibility,
+        };
+      })
+    );
+  }
 
   function getActions(token: TokenBalance) {
     const actions = [];
@@ -273,9 +336,10 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
             <tr className="border-b border-hair">
               <th className="px-6 py-3 text-left text-sm font-medium text-sub">Token</th>
               <th className="px-6 py-3 text-left text-sm font-medium text-sub">Type</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-sub">Chain</th>
               <th className="px-6 py-3 text-right text-sm font-medium text-sub">Balance</th>
               <th className="px-6 py-3 text-right text-sm font-medium text-sub">Value</th>
+              <th className="px-6 py-3 text-center text-sm font-medium text-sub">Whitelist</th>
+              <th className="px-6 py-3 text-center text-sm font-medium text-sub">Eligibility</th>
               <th className="px-6 py-3 text-right text-sm font-medium text-sub">Actions</th>
             </tr>
           </thead>
@@ -299,9 +363,6 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
                     {getTokenTypeLabel(token.tokenType)}
                   </span>
                 </td>
-                <td className="px-6 py-4">
-                  <span className="text-sm text-ink capitalize">{token.chain}</span>
-                </td>
                 <td className="px-6 py-4 text-right">
                   <span className="text-sm font-medium text-ink">
                     {formatTokenBalance(token.balance, token.decimals)} {token.symbol}
@@ -309,6 +370,28 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
                 </td>
                 <td className="px-6 py-4 text-right">
                   <span className="text-sm font-medium text-ink">{token.value}</span>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  {token.tokenType === "WRAPPED_TOKEN" ? (
+                    token.isWhitelisted ? (
+                      <span className="inline-flex items-center gap-1 text-xs">
+                        <span className="w-2 h-2 rounded-full bg-okgreen" />
+                        <span className="text-sub">Whitelisted</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-sub">Not whitelisted</span>
+                    )
+                  ) : null}
+                </td>
+                <td className="px-6 py-4 text-center">
+                  {token.tokenType === "WRAPPED_TOKEN" && token.eligibility ? (
+                    <span className="inline-block text-xs text-sub">
+                      Tier {token.eligibility.minTier}+
+                      {token.eligibility.countries.length > 0 && (
+                        <span className="ml-1">({token.eligibility.countries.join(", ")})</span>
+                      )}
+                    </span>
+                  ) : null}
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-3">
@@ -345,7 +428,7 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
             ))}
             {filteredBalances.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-sub text-sm">
+                <td colSpan={7} className="px-6 py-8 text-center text-sub text-sm">
                   No tokens found for this network.
                 </td>
               </tr>

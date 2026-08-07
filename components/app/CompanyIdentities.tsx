@@ -290,10 +290,9 @@ export default function CompanyIdentities() {
                       </button>
                       <button
                         onClick={() => openWhitelist(identity)}
-                        className="rounded-lg border border-indigo/30 px-3 py-2 text-xs font-medium text-indigo hover:bg-indigo/10"
-                        title="Manage whitelist for token wrapping"
+                        className="rounded-lg border border-hair px-3 py-2 text-xs font-medium text-ink hover:bg-paper"
                       >
-                        <Shield size={14} />
+                        Whitelist
                       </button>
                     </div>
                   </td>

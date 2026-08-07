@@ -36,7 +36,9 @@
     "29-wrap": "tsx 29-wrap.ts",
     "30-grant-accesscore": "tsx 30-grant-accesscore.ts",
     "31-add-whitelist": "tsx 31-add-whitelist.ts",
-    "32-remove-whitelist": "tsx 32-remove-whitelist.ts"
+    "32-remove-whitelist": "tsx 32-remove-whitelist.ts",
+    "33-restore-whitelist": "tsx 33-restore-whitelist.ts",
+    "34-query-whitelist": "tsx 34-query-whitelist.ts"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
