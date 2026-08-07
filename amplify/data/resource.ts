@@ -1,6 +1,7 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { cleanverseIdentity } from "../functions/cleanverseIdentity/resource.js";
 import { cleanverseFaucet } from "../functions/cleanverseFaucet/resource.js";
+import { queryDepositAddress } from "../functions/queryDepositAddress/resource.js";
 
 const apassStatus = a.customType({
   workspaceIdentityId: a.id(),
@@ -216,7 +217,17 @@ const schema = a.schema({
     .returns(a.customType({ success: a.boolean().required(), txHash: a.string(), error: a.string() }))
     .handler(a.handler.function(cleanverseFaucet))
     .authorization((allow) => [allow.authenticated()]),
-}).authorization((allow) => [allow.resource(cleanverseIdentity), allow.resource(cleanverseFaucet)]);
+
+  queryDepositAddress: a
+    .query()
+    .arguments({
+      chain: a.string().required(),
+      address: a.string().required(),
+    })
+    .returns(a.customType({ success: a.boolean().required(), depositAddress: a.string(), error: a.string() }))
+    .handler(a.handler.function(queryDepositAddress))
+    .authorization((allow) => [allow.authenticated()]),
+}).authorization((allow) => [allow.resource(cleanverseIdentity), allow.resource(cleanverseFaucet), allow.resource(queryDepositAddress)]);
 
 export type Schema = ClientSchema<typeof schema>;
 

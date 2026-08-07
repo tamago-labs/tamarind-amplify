@@ -7,6 +7,8 @@ import { DEFAULT_TOKENS, SUPPORTED_CHAINS, formatTokenBalance, getTokenTypeLabel
 import TokenIcon from "../token-registry/TokenIcon";
 import TokenActions from "./TokenActions";
 import FaucetModal from "./FaucetModal";
+import WrapModal from "./WrapModal";
+import UnwrapModal from "./UnwrapModal";
 import { useWallet } from "../WalletProvider";
 import { useAccount, useReadContracts } from "wagmi";
 import { networkIcons } from "@web3icons/react";
@@ -38,6 +40,10 @@ interface TokenBalance {
   tokenType: string;
   tokenAddress: string;
   value: string;
+  originalTokenAddress?: string;
+  originalTokenName?: string;
+  originalTokenSymbol?: string;
+  originalTokenIcon?: string;
 }
 
 interface TokenBalancesProps {
@@ -95,6 +101,10 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
   const [activeChain, setActiveChain] = useState<string>("monad");
   const [faucetToken, setFaucetToken] = useState<TokenBalance | null>(null);
   const [showFaucetModal, setShowFaucetModal] = useState(false);
+  const [wrapToken, setWrapToken] = useState<TokenBalance | null>(null);
+  const [showWrapModal, setShowWrapModal] = useState(false);
+  const [unwrapToken, setUnwrapToken] = useState<TokenBalance | null>(null);
+  const [showUnwrapModal, setShowUnwrapModal] = useState(false);
   const { chain: walletChain, connected } = useWallet();
   const { chainId } = useAccount();
 
@@ -144,6 +154,10 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
         tokenType: token.tokenType,
         tokenAddress: token.tokenAddress,
         value: "$0.00",
+        originalTokenAddress: token.originalTokenAddress || undefined,
+        originalTokenName: token.originalTokenName || undefined,
+        originalTokenSymbol: token.originalTokenSymbol || undefined,
+        originalTokenIcon: token.originalTokenIcon || undefined,
       }));
 
       setBalances(tokensWithBalance);
@@ -191,8 +205,20 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
 
     if (token.tokenType === "WRAPPED_TOKEN") {
       actions.push(
-        { label: "Wrap", onClick: () => console.log("Wrap", token) },
-        { label: "Unwrap", onClick: () => console.log("Unwrap", token) }
+        { 
+          label: "Wrap", 
+          onClick: () => {
+            setWrapToken(token);
+            setShowWrapModal(true);
+          } 
+        },
+        { 
+          label: "Unwrap", 
+          onClick: () => {
+            setUnwrapToken(token);
+            setShowUnwrapModal(true);
+          } 
+        }
       );
     }
 
@@ -320,6 +346,24 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
           setFaucetToken(null);
         }}
         token={faucetToken}
+      />
+
+      <WrapModal
+        isOpen={showWrapModal}
+        onClose={() => {
+          setShowWrapModal(false);
+          setWrapToken(null);
+        }}
+        token={wrapToken}
+      />
+
+      <UnwrapModal
+        isOpen={showUnwrapModal}
+        onClose={() => {
+          setShowUnwrapModal(false);
+          setUnwrapToken(null);
+        }}
+        token={unwrapToken}
       />
     </div>
   );
