@@ -2,10 +2,10 @@ import crypto from "crypto";
 import type { Schema } from "../../data/resource.js";
 
 interface FaucetBody {
-  chain: string;
-  symbol: string;
-  depositAddress: string;
-  amount: string;
+  Chain: string;
+  Symbol: string;
+  DepositAddress: string;
+  Amount: string;
 }
 
 interface FaucetResponse {
@@ -40,10 +40,10 @@ export async function handler(
 
   try {
     const body: FaucetBody = {
-      chain,
-      symbol: "usdc",
-      depositAddress,
-      amount: amount || "5",
+      Chain: chain,
+      Symbol: "usdc",
+      DepositAddress: depositAddress,
+      Amount: amount || "5",
     };
 
     const url = `${BASE_URL}/faucet`;
@@ -63,7 +63,7 @@ export async function handler(
 
     const json = (await res.json()) as { code: string; message: string; data: FaucetResponse };
 
-    if (json.code === "0" || json.code === "200") {
+    if (json.code === "0000" || json.code === "0" || json.code === "200") {
       return {
         success: true,
         txHash: json.data.tx_hash,

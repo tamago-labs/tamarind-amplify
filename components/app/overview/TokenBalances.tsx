@@ -286,7 +286,7 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-3">
-                    {token.symbol === "USDC" && (
+                    {token.name === "USDC (Cleanverse)" && (
                       <button
                         onClick={() => {
                           setFaucetToken(token);
