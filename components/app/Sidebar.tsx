@@ -49,7 +49,6 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
     { page: "receivable", label: "Receivable", icon: "receivable" },
     { page: "organization-members", label: "Organization", icon: "organization" },
-    { page: "organization-tokens", label: "Token Registry", icon: "tokenRegistry" },
   ],
   company: [
     { page: "overview", label: "Overview", icon: "overview" },
@@ -60,7 +59,6 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
     { page: "receivable", label: "Receivable", icon: "receivable" },
     { page: "organization-members", label: "Organization", icon: "organization" },
-    { page: "organization-tokens", label: "Token Registry", icon: "tokenRegistry" },
   ],
   counterParty: [
     { page: "overview", label: "Overview", icon: "overview" },
