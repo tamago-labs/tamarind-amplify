@@ -8,8 +8,14 @@ import TokenIcon from "../token-registry/TokenIcon";
 import TokenActions from "./TokenActions";
 import { useWallet } from "../WalletProvider";
 import { useAccount } from "wagmi";
+import { networkIcons } from "@web3icons/react";
 
 const client = generateClient<Schema>();
+
+const chainIcons: Record<string, React.ComponentType<any>> = {
+  base: networkIcons.NetworkBase,
+  monad: networkIcons.NetworkMonad,
+};
 
 interface TokenBalance {
   id: string;
@@ -141,19 +147,23 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
       <div className="px-6 py-4 border-b border-hair flex items-center justify-between">
         <h3 className="text-lg font-semibold text-ink">Token Balances</h3>
         <div className="flex items-center gap-1 bg-paper rounded-lg p-1">
-          {SUPPORTED_CHAINS.map((chain) => (
-            <button
-              key={chain.id}
-              onClick={() => setActiveChain(chain.id)}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                activeChain === chain.id
-                  ? "bg-white text-ink shadow-sm"
-                  : "text-sub hover:text-ink"
-              }`}
-            >
-              {chain.name}
-            </button>
-          ))}
+          {SUPPORTED_CHAINS.map((chain) => {
+            const ChainIcon = chainIcons[chain.id];
+            return (
+              <button
+                key={chain.id}
+                onClick={() => setActiveChain(chain.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  activeChain === chain.id
+                    ? "bg-white text-ink shadow-sm"
+                    : "text-sub hover:text-ink"
+                }`}
+              >
+                {ChainIcon && <ChainIcon size={16} variant="branded" />}
+                {chain.name}
+              </button>
+            );
+          })}
         </div>
       </div>
 
