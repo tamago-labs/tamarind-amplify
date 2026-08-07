@@ -2,6 +2,8 @@ import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { cleanverseIdentity } from "../functions/cleanverseIdentity/resource.js";
 import { cleanverseFaucet } from "../functions/cleanverseFaucet/resource.js";
 import { queryDepositAddress } from "../functions/queryDepositAddress/resource.js";
+import { addWhitelist } from "../functions/addWhitelist/resource.js";
+import { removeWhitelist } from "../functions/removeWhitelist/resource.js";
 
 const apassStatus = a.customType({
   workspaceIdentityId: a.id(),
@@ -116,6 +118,21 @@ const schema = a.schema({
     })
     .authorization((allow) => [allow.authenticated()]),
 
+  WhitelistEntry: a
+    .model({
+      workspaceId: a.id().required(),
+      walletAddress: a.string().required(),
+      chain: a.string().required(),
+      tokenAddress: a.string().required(),
+      tokenSymbol: a.string(),
+      status: a.enum(["active", "removed"]),
+      addedAt: a.datetime(),
+      addedBy: a.string(),
+      removedAt: a.datetime(),
+      removedBy: a.string(),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
   WalletIdentity: a
     .model({
       userId: a.string().required(),
@@ -227,7 +244,30 @@ const schema = a.schema({
     .returns(a.customType({ success: a.boolean().required(), depositAddress: a.string(), error: a.string() }))
     .handler(a.handler.function(queryDepositAddress))
     .authorization((allow) => [allow.authenticated()]),
-}).authorization((allow) => [allow.resource(cleanverseIdentity), allow.resource(cleanverseFaucet), allow.resource(queryDepositAddress)]);
+
+  addWhitelist: a
+    .mutation()
+    .arguments({
+      chain: a.string().required(),
+      tokenAddress: a.string().required(),
+      walletAddresses: a.string().array().required(),
+    })
+    .returns(a.customType({ success: a.boolean().required(), error: a.string() }))
+    .handler(a.handler.function(addWhitelist))
+    .authorization((allow) => [allow.authenticated()]),
+
+  removeWhitelist: a
+    .mutation()
+    .arguments({
+      chain: a.string().required(),
+      tokenAddress: a.string().required(),
+      walletAddresses: a.string().array().required(),
+      removeReason: a.string(),
+    })
+    .returns(a.customType({ success: a.boolean().required(), error: a.string() }))
+    .handler(a.handler.function(removeWhitelist))
+    .authorization((allow) => [allow.authenticated()]),
+}).authorization((allow) => [allow.resource(cleanverseIdentity), allow.resource(cleanverseFaucet), allow.resource(queryDepositAddress), allow.resource(addWhitelist), allow.resource(removeWhitelist)]);
 
 export type Schema = ClientSchema<typeof schema>;
 

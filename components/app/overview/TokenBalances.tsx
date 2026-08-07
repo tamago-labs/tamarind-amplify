@@ -325,7 +325,7 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
                         Faucet
                       </button>
                     )}
-                    {token.name === "JPYC Mock" && (
+                    {token.name === "JPY Coin Mock" && (
                       <button
                         onClick={() => {
                           setJpycToken(token);
