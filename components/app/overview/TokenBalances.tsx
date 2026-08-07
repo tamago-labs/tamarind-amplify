@@ -29,11 +29,20 @@ interface TokenBalancesProps {
 export default function TokenBalances({ workspaceId, walletAddress }: TokenBalancesProps) {
   const [balances, setBalances] = useState<TokenBalance[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeChain, setActiveChain] = useState<string>("all");
+  const [activeChain, setActiveChain] = useState<string>("monad");
 
   useEffect(() => {
     loadBalances();
   }, [workspaceId, walletAddress]);
+
+  useEffect(() => {
+    // When wallet connects, switch to connected chain
+    if (walletAddress) {
+      // In production, detect chain from wallet
+      // For now, default to monad when connected
+      setActiveChain("monad");
+    }
+  }, [walletAddress]);
 
   async function loadBalances() {
     try {
@@ -107,9 +116,7 @@ export default function TokenBalances({ workspaceId, walletAddress }: TokenBalan
     return actions;
   }
 
-  const filteredBalances = activeChain === "all"
-    ? balances
-    : balances.filter((b) => b.chain === activeChain);
+  const filteredBalances = balances.filter((b) => b.chain === activeChain);
 
   if (loading) {
     return (
@@ -121,19 +128,9 @@ export default function TokenBalances({ workspaceId, walletAddress }: TokenBalan
 
   return (
     <div className="bg-white border border-hair rounded-xl overflow-hidden">
-      <div className="px-6 py-4 border-b border-hair flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-hair flex items-center justify-between">
         <h3 className="text-lg font-semibold text-ink">Token Balances</h3>
         <div className="flex items-center gap-1 bg-paper rounded-lg p-1">
-          <button
-            onClick={() => setActiveChain("all")}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              activeChain === "all"
-                ? "bg-white text-ink shadow-sm"
-                : "text-sub hover:text-ink"
-            }`}
-          >
-            All
-          </button>
           {SUPPORTED_CHAINS.map((chain) => (
             <button
               key={chain.id}
