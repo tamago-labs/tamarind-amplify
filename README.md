@@ -171,11 +171,14 @@ app/
     layout.tsx          # Shared Amplify authentication boundary
     workspaces/[workspaceId]/
       layout.tsx        # Workspace membership guard and dashboard shell
-      overview/page.tsx
-      [page]/page.tsx   # Role-specific placeholder modules
+      overview/page.tsx # Dashboard with token balances
+      payments/page.tsx # Payment transactions with Merkle verification
+      invoices/page.tsx # Invoice management with approve flow
+      workflows/page.tsx # Workflow list
+      workflows/[workflowId]/page.tsx # Payment canvas
       organization/
         members/page.tsx
-        templates/page.tsx
+        templates/page.tsx # Document template editor
   explore/
     page.tsx            # RWA marketplace placeholder
 
@@ -189,6 +192,17 @@ components/
     CTA.tsx
     Navbar.tsx
     Footer.tsx
+  canvas/               # Payment canvas components
+    Canvas.tsx          # Pan/zoom surface
+    CanvasCard.tsx      # Draggable identity node
+    CanvasLines.tsx     # SVG connection lines
+    FlowBuilder.tsx     # Main orchestrator
+    Toolbar.tsx         # Canvas toolbar
+    DocumentDrawer.tsx  # Connection configuration
+    PreviewRoutesModal.tsx # Pre-start route preview
+    FlowOverlay.tsx     # Active routes panel
+    IdentityPopover.tsx # Identity picker
+    types.ts           # Canvas type definitions
   app/                  # App components
     WorkspaceSelector.tsx
     WorkspaceCard.tsx
@@ -198,12 +212,34 @@ components/
     OrganizationMembers.tsx
     PendingApproval.tsx
     InvitePopover.tsx
+    TemplateEditor.tsx  # Document template editor
+    MerkleVerificationModal.tsx
+
+lib/
+  merkle.ts            # Merkle tree utilities
+  tamarindProof.ts     # TamarindProof contract ABI
+  tokens.ts            # Token configuration
+  templateOptions.ts   # Template field catalog
+  wagmi.ts             # Web3 configuration
+
+contracts/
+  src/
+    TamarindProof.sol  # Merkle proof anchoring
+    ReceivableManager.sol # Receivable financing
+    ReceivableFactory.sol # Factory for receivables
 
 amplify/
   data/
     resource.ts         # Database schema
   auth/
     resource.ts         # Auth configuration
+  functions/
+    cleanverseIdentity/ # CVI identity
+    cleanverseFaucet/   # Token faucet
+    queryDepositAddress/ # Deposit address
+    addWhitelist/       # Token whitelist
+    removeWhitelist/    # Remove whitelist
+    queryTokenRules/    # Token eligibility
 ```
 
 ## Workspace Roles

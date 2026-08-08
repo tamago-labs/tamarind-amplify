@@ -137,7 +137,6 @@ The workspace layout loads the membership and role before rendering the dashboar
 - Identities
 - Payments
 - Invoices
-- Proof Explorer
 - Receivable
 - Organization
 
@@ -147,7 +146,6 @@ The workspace layout loads the membership and role before rendering the dashboar
 - Identity
 - Payments
 - Invoices
-- Proof Explorer
 
 ### Partner
 
@@ -155,9 +153,117 @@ The workspace layout loads the membership and role before rendering the dashboar
 - Available Receivables
 - Due Diligence
 - Identity
-- Proof Explorer
 
 Company and Admin share the same operational view, but only workspace administrators and company members can manage organization records.
+
+## Payment Canvas Architecture
+
+The payment canvas is a visual workflow builder for creating and executing payment and invoice flows.
+
+### Canvas Components
+
+```text
+components/canvas/
+  Canvas.tsx          Pan/zoom surface with dot grid
+  CanvasCard.tsx      Draggable identity node (Company/Recipient/Deposit)
+  CanvasLines.tsx     SVG bezier connection lines
+  FlowBuilder.tsx     Main orchestrator (state, drag, connections)
+  Toolbar.tsx         Identity buttons, zoom, start flow
+  DocumentDrawer.tsx  Configure amount, currency, template
+  PreviewRoutesModal.tsx  Pre-start route preview
+  FlowOverlay.tsx     Active routes with sign/verify
+  IdentityPopover.tsx Pick existing identities
+  types.ts           Canvas type definitions
+```
+
+### Identity Types
+
+```text
+OrganizationIdentity → Company wallet
+WorkspaceIdentity → Counter-party wallet, Deposit wallet
+```
+
+Nodes are dragged onto the canvas from popovers that fetch existing identities.
+
+### Connection Rules
+
+| From | To | Flow Type |
+|------|----|-----------|
+| Company | Recipient | Payment |
+| Deposit | Company | Invoice |
+
+Connections are created via two-click port workflow (click output port → click input port).
+
+### Document Configuration
+
+Clicking a connection opens the DocumentDrawer:
+
+- Amount and currency (A-Tokens only: aJPYC, aUSDC)
+- Document template (filtered by flowType)
+- Custom fields from template
+- Line items (invoice only)
+- Live preview with sample data
+
+### Flow Execution
+
+1. Click "Start" → PreviewRoutesModal shows all routes
+2. Click "Start Flow" → Creates WorkflowRuns, locks canvas
+3. Counter-party clicks "Sign" → Executes ERC20 transfer
+4. Generates Merkle tree from document values
+5. Anchors Merkle root on TamarindProof contract
+6. Updates WorkflowRun status to settled
+
+### Merkle Proof Generation
+
+```text
+Document values → keccak256 hash each → Merkle tree → Merkle root
+                                                    ↓
+TamarindProof.anchorRoot(merkleRoot, settlementId)
+```
+
+Document values include:
+- Company name, recipient, amount, currency, date, txHash
+- Custom fields from template
+- Line items (if invoice)
+
+### Status Flow
+
+```text
+Payment: processing → settled / failed
+Invoice: pendingApproval → processing → settled / failed
+```
+
+### Token Restrictions
+
+A-Tokens require:
+- Minimum tier (from queryTokenRules)
+- Approved countries
+- Valid KYC
+
+ERC-20 tokens have no restrictions.
+
+## Payments and Invoices Pages
+
+### Payments Page
+
+- Tabs: Incoming / Outgoing
+- Shows payment transactions based on connected wallet
+- Click row → Opens document preview drawer
+- Verify button → Merkle verification modal
+
+### Invoices Page
+
+- Tabs: Incoming / Outgoing
+- Counter-party sees incoming invoices (need to approve/pay)
+- Company sees outgoing invoices (sent to counter-party)
+- Approve & Pay button → Executes payment + generates Merkle proof
+- Verify button → Merkle verification modal
+
+### Merkle Verification
+
+Queries TamarindProof contract:
+- `isAnchored(merkleRoot)` → Check if anchored
+- `getDocument(merkleRoot)` → Get submitter, timestamp
 
 ## Organization Architecture
 
