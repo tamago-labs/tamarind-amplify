@@ -1,28 +1,18 @@
 import { apiRequest, uuid } from "./utils/setup.js"
 
 const body = {
-  // entityName: "Tamago Labs",
-  entityName: "Bitpay, Inc.",
-  // serviceName: "Tamarind",
-  serviceName: "Bitpay",
+  entityName: "Tamago Labs", 
+  serviceName: "Tamarind", 
   category: "Payments",
-  // license: "TAMARIND-2026",
+  license: "TAMARIND-2026",
   logoUrl: "https://avatars.githubusercontent.com/u/169526695",
   addressList: [
-    // {
-    //   chain: "base",
-    //   symbol: "jpyc",
-    //   assetAddress: "0xc4d91b769f0bd8af2bf7f02862cd233e62c139d4", // JPYC Mock
-    //   walletAddresses: [
-    //     "0x971F6680a20671458d456656081ea8e32102a64e", // Your wallet
-    //   ],
-    // },
     {
       chain: "base",
-      symbol: "usdc",
-      assetAddress: "0x543b96420d072BF587B63C41C0B0922762E986Ce", // JPYC Mock
+      symbol: "jpyc",
+      assetAddress: "0xc4d91b769f0bd8af2bf7f02862cd233e62c139d4", // JPYC Mock
       walletAddresses: [
-        "0x971F6680a20671458d456656081ea8e32102a64e", // Your wallet
+        "0x3D63Ce608deB81f9436198A93BCC2e8f3D79F56E", // Your wallet
       ],
     },
   ],

@@ -133,7 +133,7 @@ Send and receive USDC across 20+ chains. Cross-chain transfers powered by Circle
 | JPYC Mock | `0xc4d91b769f0bd8af2bf7f02862cd233e62c139d4` | ERC-20 |
 | aJPYC | `0xE91425E3C244AeE3CD940eca7548CFF010b20828` | Wrapped A-Token |
 | TamarindProof | `0x8B9394A3046daE653a66Eb342C93D0812C6bD8a7` | Contract |
-| ReceivableFactory | `0xa141838e38dc7BbF262Fdcefae899A4dDB753C08` | Contract |
+| ReceivableFactory | `0xa141838e38dc7BbF262Fdcefae899A4dDB753C08` | Contract (REGISTER_ROLE) |
 
 **Note:** Wrapped A-Token cannot be launched on Monad due to AccessCoreNotSet error.
 
