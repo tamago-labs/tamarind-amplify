@@ -188,8 +188,51 @@ const schema = a.schema({
     })
     .authorization((allow) => [allow.authenticated()]),
 
-  // Receivable, ReceivableProof, InvestmentPosition — temporarily disabled for build test
-  // Will re-enable after confirming CDK synthesis works
+  Receivable: a
+    .model({
+      workspaceId: a.id().required(),
+      workflowRunId: a.id(),
+      companyId: a.id().required(),
+      chain: a.string().required(),
+      managerAddress: a.string().required(),
+      nftAddress: a.string(),
+      factoryAddress: a.string().required(),
+      fundingTarget: a.string().required(),
+      repaymentAmount: a.string().required(),
+      dueDate: a.datetime().required(),
+      interestRate: a.float(),
+      paymentProofs: a.hasMany("ReceivableProof", "receivableId"),
+      positions: a.hasMany("InvestmentPosition", "receivableId"),
+      rule: a.json(),
+      status: a.enum(["created", "funding", "funded", "repaid", "defaulted", "closed"]),
+      totalFunded: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  ReceivableProof: a
+    .model({
+      receivableId: a.id().required(),
+      proofId: a.string().required(),
+      merkleRoot: a.string().required(),
+      description: a.string(),
+      attachedAt: a.datetime(),
+      receivable: a.belongsTo("Receivable", "receivableId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  InvestmentPosition: a
+    .model({
+      receivableId: a.id().required(),
+      investorAddress: a.string().required(),
+      positionId: a.integer().required(),
+      principal: a.string().required(),
+      fundedAt: a.datetime(),
+      redeemed: a.boolean(),
+      receivable: a.belongsTo("Receivable", "receivableId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
 
   OrganizationProfile: a
     .model({
