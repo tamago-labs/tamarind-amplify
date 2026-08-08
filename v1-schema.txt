@@ -1,0 +1,813 @@
+Updated Schema Plan
+
+V1 will include the complete workflow schema, including execution and invoice approval models. We will not implement the frontend or execution logic yet.
+
+The schema must support:
+
+Multiple payment connections per Workflow
+
+Payment and invoice flows
+
+Drag-and-drop canvas nodes
+
+Template references
+
+Payment execution
+
+Counter-party invoice approval
+
+Settlement and Merkle proof references
+
+Identity Mapping
+
+Tamarind does not need separate DepositWallet or RecipientWallet models.
+
+Both are represented by WorkspaceIdentity.
+
+OrganizationIdentity
+  -> Company wallet
+
+WorkspaceIdentity
+  -> Counter-party wallet
+  -> Payment recipient
+  -> Invoice deposit/payer
+
+The same WorkspaceIdentity can be used as:
+
+Payment recipient
+
+Invoice payer
+
+Invoice deposit source
+
+Workflow
+
+Workflow
+- workspaceId
+- name
+- description
+- flowType
+- status
+- version
+- createdBy
+- updatedBy
+- publishedAt
+- archivedAt
+
+Flow types:
+
+payment
+invoice
+
+Statuses:
+
+draft
+published
+archived
+
+One Workflow can contain multiple connections.
+
+Example:
+
+Payment Workflow
+├── Company -> Employee A
+├── Company -> Employee B
+└── Company -> Contractor C
+
+WorkflowNode
+
+Represents an item placed on the canvas.
+
+WorkflowNode
+- workflowId
+- identityType
+- identityId
+- nodeRole
+- label
+- positionX
+- positionY
+- configuration
+- createdAt
+- updatedAt
+
+Identity Types
+
+organizationIdentity
+workspaceIdentity
+
+Node Roles
+
+company
+recipient
+deposit
+
+Examples:
+
+Payment:
+OrganizationIdentity + company
+  -> WorkspaceIdentity + recipient
+
+Invoice:
+WorkspaceIdentity + deposit
+  -> OrganizationIdentity + company
+
+The identityId points to either:
+
+OrganizationIdentity
+
+WorkspaceIdentity
+
+The schema should retain identityType because identityId is polymorphic.
+
+WorkflowConnection
+
+Represents a line between two canvas nodes.
+
+WorkflowConnection
+- workflowId
+- fromNodeId
+- toNodeId
+- flowType
+- templateId
+- templateVersion
+- amountMode
+- fixedAmount
+- currency
+- chain
+- approvalRequired
+- configuration
+- createdAt
+- updatedAt
+
+Payment Connection
+
+fromNode:
+  OrganizationIdentity / company
+
+toNode:
+  WorkspaceIdentity / recipient
+
+Meaning:
+
+Company sends payment to Counter-party.
+
+Invoice Connection
+
+fromNode:
+  WorkspaceIdentity / deposit
+
+toNode:
+  OrganizationIdentity / company
+
+Meaning:
+
+Counter-party receives invoice,
+approves it,
+then sends payment to Company.
+
+WorkflowRun
+
+This model is included in the V1 schema, even though execution logic comes later.
+
+WorkflowRun
+- workspaceId
+- workflowId
+- connectionId
+- flowType
+- status
+- initiatedBy
+- sourceIdentityId
+- targetIdentityId
+- sourceWalletAddress
+- targetWalletAddress
+- amount
+- currency
+- chain
+- templateId
+- templateVersion
+- settlementId
+- merkleRoot
+- txHash
+- createdAt
+- updatedAt
+
+Statuses:
+
+draft
+pendingApproval
+approved
+rejected
+processing
+settled
+failed
+cancelled
+
+Wallet addresses should be snapshotted into the run so historical execution records remain stable even if a user changes their active wallet later.
+
+InvoiceApproval
+
+Invoice approval is handled by the Counter-party for now.
+
+InvoiceApproval
+- workspaceId
+- workflowRunId
+- approverUserId
+- status
+- note
+- reviewedAt
+
+Statuses:
+
+pending
+approved
+rejected
+
+Flow:
+
+Invoice run created
+  -> InvoiceApproval pending
+  -> Counter-party approves
+  -> WorkflowRun approved
+  -> Payment begins
+
+The Company should be able to view the approval state, but the Counter-party is the approver in v1.
+
+Template Integration
+
+Each connection references a template:
+
+templateId
+templateVersion
+
+Payment templates are used for:
+
+Company -> Counter-party
+
+Invoice templates are used for:
+
+Counter-party deposit -> Company
+
+The selected version must be stored on WorkflowConnection and copied to WorkflowRun.
+
+This ensures a completed payment always knows which document template version was used.
+
+Settlement and Proof Integration
+
+After a payment settles:
+
+WorkflowRun
+  -> settlementId
+  -> Merkle root
+  -> TamarindProof
+
+A single settlement maps to one Merkle root.
+
+A receivable can reference multiple settlement proofs:
+
+Receivable
+├── settlementId A -> Merkle root A
+├── settlementId B -> Merkle root B
+└── settlementId C -> Merkle root C
+
+Amplify Relationships
+
+Recommended relationships:
+
+Workspace
+  ├── Workflows
+  ├── WorkflowRuns
+  ├── WorkflowNodes
+  ├── WorkflowConnections
+  └── InvoiceApprovals
+
+Workflow
+  ├── WorkflowNodes
+  ├── WorkflowConnections
+  └── WorkflowRuns
+
+WorkflowRun
+  └── InvoiceApproval
+
+WorkflowConnection
+  └── DocumentTemplate reference
+
+fromNodeId and toNodeId should remain explicit fields because a connection points to two different node records.
+
+Indexes
+
+The schema should support these query patterns:
+
+Workflow by workspaceId
+WorkflowNode by workflowId
+WorkflowConnection by workflowId
+WorkflowRun by workflowId
+WorkflowRun by connectionId
+InvoiceApproval by workflowRunId
+
+These indexes are important for loading a canvas and its execution history without scanning the entire workspace.
+
+Authorization
+
+Admin and Company
+
+Create workflows
+
+Edit draft workflows
+
+Add/remove nodes
+
+Add/remove connections
+
+Publish workflows
+
+View all workflow runs
+
+View invoice approvals
+
+Counter-party
+
+View workflows shared with them
+
+View relevant invoice runs
+
+Approve or reject assigned invoices
+
+View their own payment records
+
+Partner
+
+No workflow editing
+
+View permitted receivable and financing records later
+
+Published Workflow Behavior
+
+Published workflows should be treated as immutable from the application perspective.
+
+To change a published workflow:
+
+Duplicate published workflow
+  -> create new version
+  -> edit draft
+  -> publish new version
+
+The schema should retain:
+
+version
+status
+publishedAt
+
+The frontend and future backend operations will enforce the editing behavior.
+
+Final V1 Models
+
+The complete V1 schema should include:
+
+DocumentTemplate
+OrganizationProfile
+OrganizationIdentity
+WalletIdentity
+WorkspaceIdentity
+WorkspaceToken
+Workflow
+WorkflowNode
+WorkflowConnection
+WorkflowRun
+InvoiceApproval
+
+The key correction is that DepositWallet and RecipientWallet are not separate models. Both are WorkspaceIdentity nodes with different nodeRole values.
+
+Updated Template Plan
+
+The Goji template editor is useful, but its flowType needs to be interpreted correctly.
+
+Payment Template
+
+Flow:
+
+Sender -> Recipient
+
+The document represents a completed or requested payment.
+
+Typical fields:
+
+Sender name
+
+Sender wallet
+
+Recipient name
+
+Recipient wallet
+
+Amount
+
+Currency
+
+Payment date
+
+Chain
+
+Transaction hash
+
+Settlement ID
+
+Merkle root
+
+Payment status
+
+Memo or description
+
+Invoice Template
+
+Flow:
+
+Company -> Recipient
+Recipient approves
+Recipient -> Company payment
+
+The invoice is created first, then approved and paid later.
+
+Typical fields:
+
+Invoice number
+
+Issuing company
+
+Recipient or client
+
+Billing address
+
+Issue date
+
+Due date
+
+Line items
+
+Subtotal
+
+Tax
+
+Total
+
+Currency
+
+Approval status
+
+Approved by
+
+Payment date
+
+Payment transaction hash
+
+Settlement ID
+
+Merkle root
+
+Payslip Template
+
+Recommended for v1 if payroll is part of the visible product:
+
+Employer
+
+Employee
+
+Pay period
+
+Gross pay
+
+Deductions
+
+Net pay
+
+Currency
+
+Payment date
+
+Transaction hash
+
+Settlement ID
+
+Merkle root
+
+Amplify Schema
+
+Replace the P2P AutoBase template API with a workspace-scoped Amplify model.
+
+DocumentTemplate
+
+DocumentTemplate
+- workspaceId
+- name
+- templateKey
+- documentType
+- status
+- version
+- isDefault
+- createdBy
+- updatedBy
+- createdAt
+- updatedAt
+
+documentType:
+
+payment
+invoice
+payslip
+
+status:
+
+draft
+published
+archived
+
+Template Configuration
+
+For v1, store the field configuration as JSON:
+
+{
+  "fields": [
+    {
+      "key": "recipientName",
+      "label": "Recipient",
+      "type": "text",
+      "required": true,
+      "autoFillKey": "recipientName",
+      "position": "body"
+    }
+  ]
+}
+
+No raw HTML should be editable or stored as the primary template format.
+
+Editor Experience
+
+Port the useful Goji editor behavior:
+
+Template name
+
+Document type
+
+Fixed field catalog
+
+Enable/disable fields
+
+Required/optional fields
+
+Reorder fields
+
+Header/body/footer placement
+
+Preview with sample data
+
+Save draft
+
+Publish
+
+Archive
+
+Set as default
+
+Do not allow custom arbitrary field keys in v1. Use a controlled catalog so future payment flows know exactly how to populate each field.
+
+Template Field Catalog
+
+Shared Fields
+
+Company name
+
+Sender name
+
+Recipient name
+
+Sender wallet
+
+Recipient wallet
+
+Amount
+
+Currency
+
+Date
+
+Chain
+
+Transaction hash
+
+Settlement ID
+
+Merkle root
+
+Status
+
+Notes
+
+Payment Fields
+
+Payment reference
+
+Payment type
+
+Sender
+
+Recipient
+
+Amount
+
+Currency
+
+Payment date
+
+Chain
+
+Transaction hash
+
+Settlement ID
+
+Merkle root
+
+Payment status
+
+Invoice Fields
+
+Invoice number
+
+Issuing company
+
+Bill-to recipient
+
+Billing address
+
+Issue date
+
+Due date
+
+Line items
+
+Subtotal
+
+Tax
+
+Total
+
+Currency
+
+Approval status
+
+Approved by
+
+Payment date
+
+Transaction hash
+
+Settlement ID
+
+Merkle root
+
+Payslip Fields
+
+Employer
+
+Employee
+
+Pay period
+
+Gross pay
+
+Deductions
+
+Net pay
+
+Currency
+
+Payment date
+
+Transaction hash
+
+Settlement ID
+
+Merkle root
+
+Default Templates
+
+Use one default template per document type and workspace:
+
+Default Payment Receipt
+Default Invoice
+Default Payslip
+
+When a published template is edited:
+
+Existing version remains unchanged
+New version is created
+
+This is important because future payment records must reference the exact template version used.
+
+Organization Templates Page
+
+The page remains:
+
+Organization -> Templates
+
+Admin and Company users can:
+
+Create templates
+
+Edit draft templates
+
+Publish templates
+
+Set defaults
+
+Archive templates
+
+Preview templates
+
+Counter-party and Partner users cannot manage templates.
+
+Template cards should show:
+
+Payment Receipt
+Payment
+Published
+Version 2
+Default
+6 fields
+
+Future Payment Flow Integration
+
+Templates are only configuration for now.
+
+Later, a payment flow will reference:
+
+templateId
+templateVersion
+
+For a payment:
+
+Payment flow
+  -> selects Payment template
+  -> fills sender/recipient/amount/chain/txHash
+  -> generates document
+  -> hashes document
+  -> links hash to settlement
+  -> anchors proof through TamarindProof
+
+For an invoice:
+
+Invoice flow
+  -> creates invoice document
+  -> sends invoice to recipient
+  -> recipient approves
+  -> payment is sent
+  -> template is rendered with approval/payment data
+  -> final document hash is created
+
+No rendering or document generation needs to be implemented in this template milestone.
+
+Recommended Implementation Sequence
+
+Add DocumentTemplate to Amplify Data.
+
+Scope templates by workspaceId.
+
+Add payment, invoice, and payslip document types.
+
+Add controlled field catalog constants.
+
+Port the Goji template list page.
+
+Port the editor without raw HTML editing.
+
+Add preview using sample values.
+
+Add draft and publish status.
+
+Add template versioning.
+
+Add default-template handling.
+
+Add archive instead of delete.
+
+Later connect templates to payment and invoice flows.
+
+Decisions
+
+Recommended defaults:
+
+V1 document types: Payment, Invoice, Payslip
+
+Admin and Company can manage templates
+
+Fixed field catalog only
+
+No raw HTML editing
+
+Company name comes from Company Profile automatically
+
+One default template per document type
+
+Published templates are immutable
+
+Deleted templates are archived
+
+No rendered document storage in this milestone
