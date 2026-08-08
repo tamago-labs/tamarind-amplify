@@ -13,7 +13,7 @@ export default function CanvasLines({ nodes, connections, selectedId, onSelect }
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
   return (
-    <svg className="pointer-events-none absolute inset-0 h-full w-full" style={{ zIndex: 0 }}>
+    <svg className="absolute inset-0 h-full w-full" style={{ zIndex: 0 }}>
       <defs>
         <marker id="arrow" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
           <path d="M 0 0 L 10 3 L 0 6 z" fill="#c97a3d" />
@@ -36,8 +36,13 @@ export default function CanvasLines({ nodes, connections, selectedId, onSelect }
         const midY = (y1 + y2) / 2;
         const isSelected = conn.id === selectedId;
 
+        const label = conn.fixedAmount && conn.currency 
+          ? `${conn.fixedAmount} ${conn.currency.split("-")[0]}`
+          : conn.flowType === "payment" ? "Payment" : "Invoice";
+        const labelWidth = Math.max(60, label.length * 7 + 20);
+
         return (
-          <g key={conn.id} onClick={() => onSelect(conn.id)} className="pointer-events-auto cursor-pointer">
+          <g key={conn.id} onClick={(e) => { e.stopPropagation(); onSelect(conn.id); }} className="pointer-events-auto cursor-pointer">
             <path
               d={path}
               fill="none"
@@ -52,14 +57,15 @@ export default function CanvasLines({ nodes, connections, selectedId, onSelect }
               strokeWidth={14}
             />
             <rect
-              x={midX - 40}
+              x={midX - labelWidth / 2}
               y={midY - 12}
-              width={80}
+              width={labelWidth}
               height={24}
               rx={12}
               fill="white"
               stroke={isSelected ? "#6366f1" : "#e5e7eb"}
               strokeWidth={1}
+              className="pointer-events-none"
             />
             <text
               x={midX}
@@ -70,7 +76,7 @@ export default function CanvasLines({ nodes, connections, selectedId, onSelect }
               fontSize={10}
               fontWeight={500}
             >
-              {conn.flowType === "payment" ? "Payment" : "Invoice"}
+              {label}
             </text>
           </g>
         );

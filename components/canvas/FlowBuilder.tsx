@@ -9,6 +9,7 @@ import CanvasCard from "./CanvasCard";
 import CanvasLines from "./CanvasLines";
 import Toolbar from "./Toolbar";
 import IdentityPopover from "./IdentityPopover";
+import DocumentDrawer from "./DocumentDrawer";
 import { type CanvasNode, type CanvasConnection, type NodeRole, VALID_CONNECTIONS, CARD_WIDTH, CARD_HEIGHTS } from "./types";
 
 const client = generateClient<Schema>();
@@ -63,6 +64,13 @@ export default function FlowBuilder({ workflowId, workspaceId, workflowName: ini
             const { data: identity } = await client.models.WorkspaceIdentity.get({ id: n.identityId });
             if (identity) {
               internalStatus = identity.internalStatus || "";
+              if (identity.walletIdentityId) {
+                const { data: wallet } = await client.models.WalletIdentity.get({ id: identity.walletIdentityId });
+                if (wallet) {
+                  walletAddress = wallet.walletAddress;
+                  chain = wallet.chain;
+                }
+              }
             }
             const { data: apass } = await client.queries.queryApass({ workspaceId, workspaceIdentityId: n.identityId });
             if (apass?.countries) countries = apass.countries.filter((c): c is string => c !== null);
@@ -105,6 +113,7 @@ export default function FlowBuilder({ workflowId, workspaceId, workflowName: ini
         currency: c.currency || undefined,
         chain: c.chain || undefined,
         approvalRequired: c.approvalRequired || undefined,
+        configuration: c.configuration ? String(c.configuration) : undefined,
       }))
     );
     setLoading(false);
@@ -241,6 +250,17 @@ export default function FlowBuilder({ workflowId, workspaceId, workflowName: ini
     setSelectedNodeId(null);
   }, []);
 
+  const handleSaveConnection = useCallback(async (connectionId: string, data: Partial<CanvasConnection>) => {
+    await client.models.WorkflowConnection.update({ id: connectionId, ...data });
+    setConnections((prev) => prev.map((c) => c.id === connectionId ? { ...c, ...data } : c));
+  }, []);
+
+  const handleDeleteConnection = useCallback(async (connectionId: string) => {
+    await client.models.WorkflowConnection.delete({ id: connectionId });
+    setConnections((prev) => prev.filter((c) => c.id !== connectionId));
+    setSelectedConnectionId(null);
+  }, []);
+
   const handleSelectNode = useCallback((nodeId: string) => {
     setSelectedNodeId(nodeId);
     setSelectedConnectionId(null);
@@ -320,6 +340,21 @@ export default function FlowBuilder({ workflowId, workspaceId, workflowName: ini
           onClose={() => setPopoverRole(null)}
         />
       )}
+      {selectedConnectionId && (() => {
+        const conn = connections.find((c) => c.id === selectedConnectionId);
+        if (!conn) return null;
+        return (
+          <DocumentDrawer
+            connection={conn}
+            fromNode={nodes.find((n) => n.id === conn.fromNodeId)}
+            toNode={nodes.find((n) => n.id === conn.toNodeId)}
+            workspaceId={workspaceId}
+            onSave={handleSaveConnection}
+            onDelete={handleDeleteConnection}
+            onClose={() => setSelectedConnectionId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }

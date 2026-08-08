@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { X, Building2, User, Briefcase, Search } from "lucide-react";
 import { generateClient } from "aws-amplify/data";
 import { networkIcons } from "@web3icons/react";
@@ -111,9 +112,20 @@ export default function IdentityPopover({ role, workspaceId, onSelect, onClose }
             let tier = "";
             let expirationTime: number | undefined;
             let displayName = "Recipient";
+            let walletAddress = "";
+            let chain = "";
             try {
               const { data: profiles } = await client.models.UserProfile.list({ filter: { userId: { eq: item.userId } } });
               if (profiles?.[0]?.displayName) displayName = profiles[0].displayName;
+            } catch {}
+            try {
+              if (item.walletIdentityId) {
+                const { data: wallet } = await client.models.WalletIdentity.get({ id: item.walletIdentityId });
+                if (wallet) {
+                  walletAddress = wallet.walletAddress;
+                  chain = wallet.chain;
+                }
+              }
             } catch {}
             try {
               const { data: apass } = await client.queries.queryApass({ workspaceId, workspaceIdentityId: item.id });
@@ -124,8 +136,8 @@ export default function IdentityPopover({ role, workspaceId, onSelect, onClose }
             return {
               id: item.id,
               label: displayName,
-              walletAddress: "",
-              chain: "",
+              walletAddress,
+              chain,
               countries,
               tier,
               expirationTime,
@@ -147,11 +159,23 @@ export default function IdentityPopover({ role, workspaceId, onSelect, onClose }
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
-      <div
-        className="w-full max-w-lg rounded-2xl bg-white shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+        onClick={onClose}
       >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          className="w-full max-w-lg rounded-2xl bg-white shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: `${config.color}15` }}>
@@ -243,7 +267,8 @@ export default function IdentityPopover({ role, workspaceId, onSelect, onClose }
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+    </AnimatePresence>
   );
 }
