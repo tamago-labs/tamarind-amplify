@@ -3,7 +3,7 @@ import type { Schema } from "../../data/resource.js";
 import { Amplify } from "aws-amplify";
 import { getAmplifyDataClientConfig } from "@aws-amplify/backend/function/runtime";
 import { generateClient } from "aws-amplify/data";
-import { env } from "$amplify/env/cleanverseFaucet";
+import { env } from "$amplify/env/queryDepositAddress";
 
 const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env);
 Amplify.configure(resourceConfig, libraryOptions);
