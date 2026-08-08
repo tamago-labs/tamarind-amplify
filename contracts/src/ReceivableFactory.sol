@@ -44,7 +44,9 @@ contract ReceivableFactory is Ownable {
         manager = address(created);
         // Factory must hold Cleanverse REGISTER_ROLE before this operation is used.
         validator.registerV2(manager, rule);
-        validator.registerApass(manager, token);
+        // Method A: CVA automatic compliance — registerApass(pool, token, fee)
+        // Fee address(0) = no fee account
+        validator.registerApass(manager, token, address(0));
         managers.push(manager);
         managersByCompany[msg.sender].push(manager);
         emit ReceivableManagerCreated(manager, msg.sender, managers.length - 1);
