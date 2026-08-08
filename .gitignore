@@ -39,6 +39,3 @@ next-env.d.ts
 .amplify
 amplify_outputs*
 amplifyconfiguration*
-
-# scripts (compliance test scripts - maintained separately)
-scripts/

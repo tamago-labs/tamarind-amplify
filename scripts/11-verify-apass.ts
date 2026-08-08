@@ -2,8 +2,8 @@ import { apiRequest, uuid, type VerifyAPassBody, type VerifyAPassResponse } from
 
 const body: VerifyAPassBody = {
   chain: "base",
-  atoken: "0x89a21fAEE4FAf7E8d3d95e7d1236b81dB1FFA48b",
-  address: "0xee098fEA55039762bC5db10a512588a33e9F965E",
+  atoken: "0xE91425E3C244AeE3CD940eca7548CFF010b20828",
+  address: "0x971F6680a20671458d456656081ea8e32102a64e",
 }
 
 console.log("=== 11. Verify A-Pass ===")

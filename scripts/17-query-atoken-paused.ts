@@ -2,7 +2,7 @@ import { apiRequest, uuid, type QueryATokenPausedBody, type QueryATokenPausedRes
 
 const body: QueryATokenPausedBody = {
   chain: "base",
-  atoken_address: "0x89a21faee4faf7e8d3d95e7d1236b81db1ffa48b",
+  atoken_address: "0xaC0893567D43C3E7e6e35a72803df05416C1f20D",
 }
 
 console.log("=== 17. Query A-Token Paused State ===")

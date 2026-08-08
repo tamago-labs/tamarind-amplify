@@ -9,8 +9,10 @@ process.loadEnvFile(resolve(__dirname, ".env"))
 
 // ── Config ────────────────────────────────────────────────────
 const PRIVATE_KEY = process.env.PRIVATE_KEY!
-const RPC_URL = process.env.RPC_URL || "https://sepolia.base.org"
-const TOKEN_ADDRESS = "0x89a21fAEE4FAf7E8d3d95e7d1236b81dB1FFA48b"
+// const RPC_URL = process.env.RPC_URL || "https://sepolia.base.org"
+const RPC_URL = "https://testnet-rpc.monad.xyz"
+// const TOKEN_ADDRESS = "0x89a21fAEE4FAf7E8d3d95e7d1236b81dB1FFA48b"
+const TOKEN_ADDRESS = "0x89D4513154277359343B959043A4886f646521d7"
 const DECIMALS = 6
 
 // ── Minimal ABI ───────────────────────────────────────────────
@@ -109,7 +111,7 @@ async function mint(toAddress: string, amount: string) {
 
   const balance = await token.balanceOf(toAddress)
   console.log()
-  console.log("Recipient balance:", ethers.formatUnits(balance, DECIMALS), "TRT001")
+  console.log("Recipient balance:", ethers.formatUnits(balance, DECIMALS), "TRT004")
 }
 
 // ── Main ──────────────────────────────────────────────────────

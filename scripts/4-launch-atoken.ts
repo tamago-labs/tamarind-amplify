@@ -1,11 +1,11 @@
 import { apiRequest, uuid, type LaunchATokenBody, type LaunchATokenResponse } from "./utils/setup.js"
 
 const body: LaunchATokenBody = {
-  chain: "base",
+  chain: "monad",
   token_name: "Tamarind Receivable Token",
-  token_symbol: "TRT002",
+  token_symbol: "TRT003",
   decimals: 6,
-  admin_address: "0x971F6680a20671458d456656081ea8e32102a64e",
+  admin_address: "0x36bBb997235Fc965a854e132976fC8461B9392F5",
   rule: {
     allowed_group: "",
     allowed_sub_group: "",

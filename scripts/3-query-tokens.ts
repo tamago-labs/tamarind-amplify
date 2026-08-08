@@ -1,7 +1,7 @@
 import { apiRequest, uuid, type QueryTokensResponse } from "./utils/setup.js"
 
 const body = {
-  chain: "monad",
+  chain: "base",
 }
 
 console.log("=== 3. Query Supported Tokens ===")

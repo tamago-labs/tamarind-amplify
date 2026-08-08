@@ -2,7 +2,7 @@ import { apiRequest, uuid, type QueryDepositAddressBody, type QueryDepositAddres
 
 const body: QueryDepositAddressBody = {
   chain: "base",
-  address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0",
+  address: "0x971F6680a20671458d456656081ea8e32102a64e",
 }
 
 console.log("=== 13. Query Deposit Address ===")

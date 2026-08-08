@@ -83,6 +83,111 @@ const schema = a.schema({
       allow.authenticated(),
     ]),
 
+  DocumentTemplate: a
+    .model({
+      workspaceId: a.id().required(),
+      name: a.string().required(),
+      templateKey: a.string().required(),
+      documentType: a.enum(["payment", "invoice", "payslip"]),
+      status: a.enum(["draft", "published", "archived"]),
+      version: a.integer().required(),
+      isDefault: a.boolean().required(),
+      fields: a.json().required(),
+      createdBy: a.string().required(),
+      updatedBy: a.string().required(),
+      publishedAt: a.datetime(),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  Workflow: a
+    .model({
+      workspaceId: a.id().required(),
+      name: a.string().required(),
+      description: a.string(),
+      flowType: a.enum(["payment", "invoice"]),
+      status: a.enum(["draft", "published", "archived"]),
+      version: a.integer().required(),
+      createdBy: a.string().required(),
+      updatedBy: a.string().required(),
+      publishedAt: a.datetime(),
+      archivedAt: a.datetime(),
+      nodes: a.hasMany("WorkflowNode", "workflowId"),
+      connections: a.hasMany("WorkflowConnection", "workflowId"),
+      runs: a.hasMany("WorkflowRun", "workflowId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  WorkflowNode: a
+    .model({
+      workflowId: a.id().required(),
+      identityType: a.enum(["organizationIdentity", "workspaceIdentity"]),
+      identityId: a.id().required(),
+      nodeRole: a.enum(["company", "recipient", "deposit"]),
+      label: a.string(),
+      positionX: a.float().required(),
+      positionY: a.float().required(),
+      configuration: a.json(),
+      workflow: a.belongsTo("Workflow", "workflowId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  WorkflowConnection: a
+    .model({
+      workflowId: a.id().required(),
+      fromNodeId: a.id().required(),
+      toNodeId: a.id().required(),
+      flowType: a.enum(["payment", "invoice"]),
+      templateId: a.id(),
+      templateVersion: a.integer(),
+      amountMode: a.enum(["fixed", "input"]),
+      fixedAmount: a.string(),
+      currency: a.string(),
+      chain: a.string(),
+      approvalRequired: a.boolean(),
+      configuration: a.json(),
+      workflow: a.belongsTo("Workflow", "workflowId"),
+      runs: a.hasMany("WorkflowRun", "connectionId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  WorkflowRun: a
+    .model({
+      workspaceId: a.id().required(),
+      workflowId: a.id().required(),
+      connectionId: a.id().required(),
+      flowType: a.enum(["payment", "invoice"]),
+      status: a.enum(["draft", "pendingApproval", "approved", "rejected", "processing", "settled", "failed", "cancelled"]),
+      initiatedBy: a.string().required(),
+      sourceIdentityId: a.id(),
+      targetIdentityId: a.id(),
+      sourceWalletAddress: a.string(),
+      targetWalletAddress: a.string(),
+      amount: a.string(),
+      currency: a.string(),
+      chain: a.string(),
+      templateId: a.id(),
+      templateVersion: a.integer(),
+      settlementId: a.string(),
+      merkleRoot: a.string(),
+      txHash: a.string(),
+      workflow: a.belongsTo("Workflow", "workflowId"),
+      connection: a.belongsTo("WorkflowConnection", "connectionId"),
+      approvals: a.hasMany("InvoiceApproval", "workflowRunId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  InvoiceApproval: a
+    .model({
+      workspaceId: a.id().required(),
+      workflowRunId: a.id().required(),
+      approverUserId: a.string().required(),
+      status: a.enum(["pending", "approved", "rejected"]),
+      note: a.string(),
+      reviewedAt: a.datetime(),
+      workflowRun: a.belongsTo("WorkflowRun", "workflowRunId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
   OrganizationProfile: a
     .model({
       workspaceId: a.id().required(),

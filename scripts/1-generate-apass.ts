@@ -1,15 +1,15 @@
 import { apiRequest, uuid, type GenerateAPassBody, type GenerateAPassResponse } from "./utils/setup.js"
 
 const body: GenerateAPassBody = {
-  customerId: "TAMARINDUSER003",
-  // kycSource: "sumsub",
-  // kycId: "KYC-001",
-  subTier: 9,
+  customerId: "TAMARINDUSER007",
+  kycSource: "sumsub",
+  kycId: "KYC-001",
+  subTier: 10,
   subGroup: "CD",
   override: false,
   expirationTime: 1863690034,
   wallet: {
-    address: "0x971F6680a20671458d456656081ea8e32102a64e",
+    address: "0x36bBb997235Fc965a854e132976fC8461B9392F5",
     chain: "base",
   },
   identityDataList: [
