@@ -23,7 +23,7 @@ export const DEFAULT_TOKENS: TokenConfig[] = [
   // JPYC Mock Tokens
   {
     tokenAddress: "0xc4d91b769f0bd8af2bf7f02862cd233e62c139d4",
-    name: "JPY Coin Mock",
+    name: "JPY Coin",
     symbol: "JPYC",
     decimals: 6,
     icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/40123.png",
@@ -33,7 +33,7 @@ export const DEFAULT_TOKENS: TokenConfig[] = [
   },
   {
     tokenAddress: "0x9465a4C246D44F32F391Ebda165Acb12886746Ca",
-    name: "JPY Coin Mock",
+    name: "JPY Coin",
     symbol: "JPYC",
     decimals: 6,
     icon: "https://s2.coinmarketcap.com/static/img/coins/64x64/40123.png",
@@ -132,4 +132,22 @@ export function formatTokenBalance(balance: string, decimals: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: decimals > 6 ? 6 : decimals,
   });
+}
+
+// JPY to USD rate (approximately 0.0063)
+const JPY_TO_USD = 0.0063;
+
+export function calculateTokenValue(balance: string, symbol: string): string {
+  const num = parseFloat(balance);
+  if (num === 0) return "$0.00";
+
+  // JPY-related tokens use JPY rate
+  const isJpyToken = symbol.toLowerCase().includes("jpyc") || symbol.toLowerCase().includes("jpy");
+
+  const value = isJpyToken ? num * JPY_TO_USD : num;
+
+  return `$${value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
-import { DEFAULT_TOKENS, SUPPORTED_CHAINS, formatTokenBalance, getTokenTypeLabel } from "@/config/tokens";
+import { DEFAULT_TOKENS, SUPPORTED_CHAINS, formatTokenBalance, calculateTokenValue, getTokenTypeLabel } from "@/config/tokens";
 import TokenIcon from "../token-registry/TokenIcon";
 import TokenActions from "./TokenActions";
 import FaucetModal from "./FaucetModal";
@@ -202,11 +202,10 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
         const key = `${token.tokenAddress}-${token.chain}`;
         const balance = balanceMap[key];
         if (balance !== undefined) {
-          const numBalance = parseFloat(balance);
           return {
             ...token,
             balance,
-            value: `$${numBalance.toFixed(2)}`,
+            value: calculateTokenValue(balance, token.symbol),
           };
         }
         return token;
@@ -294,7 +293,13 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
     return actions;
   }
 
-  const filteredBalances = balances.filter((b) => b.chain === activeChain);
+  const filteredBalances = balances
+    .filter((b) => b.chain === activeChain)
+    .sort((a, b) => {
+      // Sort by type: A_TOKEN first, then WRAPPED_TOKEN, then ERC20
+      const typeOrder: Record<string, number> = { A_TOKEN: 0, WRAPPED_TOKEN: 1, ERC20: 2 };
+      return (typeOrder[a.tokenType] ?? 3) - (typeOrder[b.tokenType] ?? 3);
+    });
 
   if (loading) {
     return (
@@ -336,10 +341,9 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
             <tr className="border-b border-hair">
               <th className="px-6 py-3 text-left text-sm font-medium text-sub">Token</th>
               <th className="px-6 py-3 text-left text-sm font-medium text-sub">Type</th>
+              <th className="px-6 py-3 text-center text-sm font-medium text-sub">Eligibility</th>
               <th className="px-6 py-3 text-right text-sm font-medium text-sub">Balance</th>
               <th className="px-6 py-3 text-right text-sm font-medium text-sub">Value</th>
-              <th className="px-6 py-3 text-center text-sm font-medium text-sub">Whitelist</th>
-              <th className="px-6 py-3 text-center text-sm font-medium text-sub">Eligibility</th>
               <th className="px-6 py-3 text-right text-sm font-medium text-sub">Actions</th>
             </tr>
           </thead>
@@ -363,6 +367,34 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
                     {getTokenTypeLabel(token.tokenType)}
                   </span>
                 </td>
+                <td className="px-6 py-4 text-center">
+                  {token.tokenType === "WRAPPED_TOKEN" ? (
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full ${
+                          token.isWhitelisted ? "bg-okgreen" : "bg-yellow-500"
+                        }`}
+                        title={
+                          token.isWhitelisted
+                            ? "Your account is whitelisted for wrap/unwrap operations"
+                            : "Your account is not whitelisted for wrap/unwrap operations"
+                        }
+                      />
+                      {token.eligibility ? (
+                        <span className="text-xs text-sub">
+                          Tier {token.eligibility.minTier}+
+                          {token.eligibility.countries.length > 0 && (
+                            <span className="ml-1">({token.eligibility.countries.join(", ")})</span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-sub">Whitelisted</span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-sub">—</span>
+                  )}
+                </td>
                 <td className="px-6 py-4 text-right">
                   <span className="text-sm font-medium text-ink">
                     {formatTokenBalance(token.balance, token.decimals)} {token.symbol}
@@ -370,28 +402,6 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
                 </td>
                 <td className="px-6 py-4 text-right">
                   <span className="text-sm font-medium text-ink">{token.value}</span>
-                </td>
-                <td className="px-6 py-4 text-center">
-                  {token.tokenType === "WRAPPED_TOKEN" ? (
-                    token.isWhitelisted ? (
-                      <span className="inline-flex items-center gap-1 text-xs">
-                        <span className="w-2 h-2 rounded-full bg-okgreen" />
-                        <span className="text-sub">Whitelisted</span>
-                      </span>
-                    ) : (
-                      <span className="text-xs text-sub">Not whitelisted</span>
-                    )
-                  ) : null}
-                </td>
-                <td className="px-6 py-4 text-center">
-                  {token.tokenType === "WRAPPED_TOKEN" && token.eligibility ? (
-                    <span className="inline-block text-xs text-sub">
-                      Tier {token.eligibility.minTier}+
-                      {token.eligibility.countries.length > 0 && (
-                        <span className="ml-1">({token.eligibility.countries.join(", ")})</span>
-                      )}
-                    </span>
-                  ) : null}
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-3">
@@ -408,7 +418,7 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
                         Faucet
                       </button>
                     )}
-                    {token.name === "JPY Coin Mock" && (
+                    {token.name === "JPY Coin" && (
                       <button
                         onClick={() => {
                           setJpycToken(token);
@@ -428,7 +438,7 @@ export default function TokenBalances({ workspaceId }: TokenBalancesProps) {
             ))}
             {filteredBalances.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-sub text-sm">
+                <td colSpan={6} className="px-6 py-8 text-center text-sub text-sm">
                   No tokens found for this network.
                 </td>
               </tr>

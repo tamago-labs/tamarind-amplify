@@ -170,9 +170,19 @@ export default function WrapModal({ isOpen, onClose, token }: WrapModalProps) {
                     />
                   </div>
 
-                  <p className="text-xs text-sub mb-4">
-                    Transfer {originalToken.symbol} to the deposit address. A-Tokens will be sent to your wallet after ~1 minute.
-                  </p>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                    <div className="flex items-start gap-3">
+                      <span className="text-yellow-600 mt-0.5">ℹ</span>
+                      <div>
+                        <p className="text-sm text-yellow-800">
+                          Transfer {originalToken.symbol} to the deposit address.
+                        </p>
+                        <p className="text-sm text-yellow-800 mt-1">
+                          A-Tokens will be <span className="font-semibold">minted</span> to your wallet after <span className="font-semibold">~1 minute</span>.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
                   <button
                     onClick={handleWrap}
