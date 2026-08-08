@@ -14,7 +14,7 @@ export interface TemplateDraft {
   fields: TemplateField[];
 }
 
-function generatePreviewHtml(companyName: string, fields: TemplateField[]): string {
+function generatePreviewHtml(documentName: string, fields: TemplateField[]): string {
   const headerFields = fields.filter((f) => f.position === "header");
   const bodyFields = fields.filter((f) => f.position === "body");
   const footerFields = fields.filter((f) => f.position === "footer");
@@ -48,8 +48,7 @@ function generatePreviewHtml(companyName: string, fields: TemplateField[]): stri
 </head>
 <body>
   <div class="header-section">
-    <div class="company">{{companyName}}</div>
-    <div class="subtitle">Document</div>
+    <div class="company">${documentName || "Document"}</div>
     ${headerFields.map(renderField).join("")}
   </div>
   
@@ -66,11 +65,11 @@ function generatePreviewHtml(companyName: string, fields: TemplateField[]): stri
 </html>`;
 }
 
-function renderPreviewHtml(html: string, companyName: string, fields: TemplateField[]): string {
+function renderPreviewHtml(html: string, fields: TemplateField[]): string {
   let preview = html;
-  preview = preview.replace(/\{\{companyName\}\}/g, companyName || "Company Name");
   
   const sampleValues: Record<string, string> = {
+    companyName: "Acme Corp",
     senderName: "Acme Corp",
     recipientName: "John Doe",
     amount: "1,000.00",
@@ -162,8 +161,9 @@ export default function TemplateEditor({ template, onClose, onSave, error }: { t
     setSaving(false); 
   }
 
-  const previewHtml = useMemo(() => generatePreviewHtml(name, fields), [name, fields]);
-  const samplePreviewHtml = useMemo(() => renderPreviewHtml(previewHtml, name, fields), [previewHtml, name, fields]);
+  const allFields = useMemo(() => [...lockedFields, ...fields.filter((f) => !f.locked)], [lockedFields, fields]);
+  const previewHtml = useMemo(() => generatePreviewHtml(name, allFields), [name, allFields]);
+  const samplePreviewHtml = useMemo(() => renderPreviewHtml(previewHtml, allFields), [previewHtml, allFields]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 px-6">
@@ -292,7 +292,7 @@ export default function TemplateEditor({ template, onClose, onSave, error }: { t
               ) : (
                 <div className="space-y-3">
                   <div className="rounded-xl border border-hair bg-paper p-4">
-                    <div className="text-xs text-sub mb-2">Company Name</div>
+                    <div className="text-xs text-sub mb-2">Document Name</div>
                     <div className="text-sm text-ink font-medium">{name || "Not set"}</div>
                   </div>
                   

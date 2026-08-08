@@ -25,7 +25,17 @@ export default function TemplatesPage() {
   async function load() {
     setLoading(true);
     const { data } = await client.models.DocumentTemplate.list({ filter: { workspaceId: { eq: workspaceId } } });
-    setTemplates((data || []).map((template) => ({ ...template, documentType: (template.documentType || "payment") as DocumentType, status: template.status || "draft", fields: (template.fields || []) as unknown as TemplateField[] })) as TemplateRecord[]);
+    setTemplates((data || []).filter((template) => template.status !== "archived").map((template) => {
+      let fields: TemplateField[] = [];
+      if (template.fields) {
+        try {
+          fields = typeof template.fields === "string" ? JSON.parse(template.fields) : template.fields as unknown as TemplateField[];
+        } catch {
+          fields = [];
+        }
+      }
+      return { ...template, documentType: (template.documentType || "payment") as DocumentType, status: template.status || "draft", fields } as TemplateRecord;
+    }));
     setLoading(false);
   }
   useEffect(() => { if (workspaceId) load(); }, [workspaceId]);
