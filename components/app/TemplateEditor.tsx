@@ -120,7 +120,8 @@ export default function TemplateEditor({ template, onClose, onSave, error }: { t
     }
   }, [documentType, template]);
 
-  const available = useMemo(() => fieldsByDocumentType[documentType].filter((field) => !fields.some((item) => item.key === field.key)), [documentType, fields]);
+  const lockedFields = useMemo(() => fieldsByDocumentType[documentType].filter((f) => f.locked), [documentType]);
+  const available = useMemo(() => fieldsByDocumentType[documentType].filter((field) => !field.locked && !fields.some((item) => item.key === field.key)), [documentType, fields]);
 
   function addField(key: string) { 
     const field = fieldsByDocumentType[documentType].find((item) => item.key === key); 
@@ -146,8 +147,9 @@ export default function TemplateEditor({ template, onClose, onSave, error }: { t
   }
 
   async function save() { 
-    if (!name.trim() || fields.length === 0) return; 
+    if (!name.trim()) return; 
     setSaving(true); 
+    const allFields = [...lockedFields, ...fields.filter((f) => !f.locked)];
     await onSave({ 
       id: template?.id, 
       name: name.trim(), 
@@ -155,7 +157,7 @@ export default function TemplateEditor({ template, onClose, onSave, error }: { t
       documentType, 
       version: template?.version || 1, 
       isDefault: template?.isDefault || false, 
-      fields 
+      fields: allFields
     }); 
     setSaving(false); 
   }
@@ -209,6 +211,21 @@ export default function TemplateEditor({ template, onClose, onSave, error }: { t
             </label>
             
             <div className="mt-6">
+              {lockedFields.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs font-medium text-sub mb-2">Required fields</p>
+                  <div className="space-y-2">
+                    {lockedFields.map((field) => (
+                      <div key={field.key} className="flex items-center gap-2 rounded-lg border border-hair bg-paper/50 px-3 py-2 opacity-75">
+                        <span className="flex-1 text-sm text-ink">{field.label}</span>
+                        <span className="text-[10px] text-sub">{field.position}</span>
+                        <span className="text-[10px] text-sub">auto-included</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-ink">Fields</p>
                 <select 
@@ -224,23 +241,18 @@ export default function TemplateEditor({ template, onClose, onSave, error }: { t
               </div>
               
               <div className="mt-3 space-y-2">
-                {fields.map((field, i) => (
+                {fields.filter((f) => !f.locked).map((field, i) => (
                   <div key={field.key} className="flex items-center gap-2 rounded-lg border border-hair bg-paper px-3 py-2">
                     <GripVertical size={14} className="text-sub" />
                     <span className="flex-1 text-sm text-ink">{field.label}</span>
                     <span className="text-[10px] text-sub">{field.position}</span>
-                    {!field.locked && (
-                      <button 
-                        onClick={() => removeField(i)} 
-                        className="p-1 text-sub hover:text-coral"
-                        aria-label="Remove field"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                    {field.locked && (
-                      <span className="text-[10px] text-sub italic">locked</span>
-                    )}
+                    <button 
+                      onClick={() => removeField(fields.indexOf(field))} 
+                      className="p-1 text-sub hover:text-coral"
+                      aria-label="Remove field"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -284,18 +296,31 @@ export default function TemplateEditor({ template, onClose, onSave, error }: { t
                     <div className="text-sm text-ink font-medium">{name || "Not set"}</div>
                   </div>
                   
-                  {fields.length > 0 ? (
-                    <div className="rounded-xl border border-hair bg-paper p-4">
-                      <div className="text-xs text-sub mb-3">Fields ({fields.length})</div>
+                  {lockedFields.length > 0 && (
+                    <div className="rounded-xl border border-hair bg-paper/50 p-4">
+                      <div className="text-xs text-sub mb-3">Required fields ({lockedFields.length})</div>
                       <div className="space-y-2">
-                        {fields.map((field) => (
+                        {lockedFields.map((field) => (
                           <div key={field.key} className="flex items-center justify-between text-sm">
                             <span className="text-ink">{field.label}</span>
                             <span className="text-sub text-xs">
-                              {field.type}
-                              {field.locked ? " • locked" : ""}
-                              {" • "}
-                              {field.position}
+                              {field.type} • auto-included
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {fields.filter((f) => !f.locked).length > 0 ? (
+                    <div className="rounded-xl border border-hair bg-paper p-4">
+                      <div className="text-xs text-sub mb-3">Fields ({fields.filter((f) => !f.locked).length})</div>
+                      <div className="space-y-2">
+                        {fields.filter((f) => !f.locked).map((field) => (
+                          <div key={field.key} className="flex items-center justify-between text-sm">
+                            <span className="text-ink">{field.label}</span>
+                            <span className="text-sub text-xs">
+                              {field.type} • {field.position}
                             </span>
                           </div>
                         ))}
