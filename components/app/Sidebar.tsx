@@ -46,7 +46,6 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "identities", label: "Identities", icon: "identity" },
     { page: "payments", label: "Payments", icon: "payments" },
     { page: "invoices", label: "Invoices", icon: "invoices" },
-    { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
     { page: "receivable", label: "Receivable", icon: "receivable" },
     { page: "organization-members", label: "Organization", icon: "organization" },
   ],
@@ -56,7 +55,6 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "identities", label: "Identities", icon: "identity" },
     { page: "payments", label: "Payments", icon: "payments" },
     { page: "invoices", label: "Invoices", icon: "invoices" },
-    { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
     { page: "receivable", label: "Receivable", icon: "receivable" },
     { page: "organization-members", label: "Organization", icon: "organization" },
   ],
@@ -65,14 +63,12 @@ const navByRole: Record<string, NavItem[]> = {
     { page: "identity", label: "Identity", icon: "identity" },
     { page: "payments", label: "Payments", icon: "payments" },
     { page: "invoices", label: "Invoices", icon: "invoices" },
-    { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
   ],
   partner: [
     { page: "overview", label: "Overview", icon: "overview" },
     { page: "available-receivables", label: "Available Receivables", icon: "availableReceivables" },
     { page: "due-diligence", label: "Due Diligence", icon: "dueDiligence" },
     { page: "identity", label: "Identity", icon: "identity" },
-    { page: "proof-explorer", label: "Proof Explorer", icon: "proof" },
   ],
 };
 
