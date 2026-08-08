@@ -13,6 +13,7 @@ export async function handler(
   event: Schema["queryAvailableReceivablesOp"]["functionHandler"]
 ): Promise<{ success: boolean; receivables?: any[]; error?: string }> {
   const { workspaceId } = event.arguments;
+  console.log("queryAvailableReceivables:", { workspaceId });
 
   try {
     const receivablesResult = await client.models.Receivable.list({
@@ -29,22 +30,13 @@ export async function handler(
         const proofsResult = await client.models.ReceivableProof.list({
           filter: { receivableId: { eq: r.id } },
         });
-        return {
-          ...r,
-          proofs: proofsResult.data || [],
-        };
+        return { ...r, proofs: proofsResult.data || [] };
       })
     );
 
-    return {
-      success: true,
-      receivables,
-    };
+    return { success: true, receivables };
   } catch (error) {
     console.error("queryAvailableReceivables error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
 }

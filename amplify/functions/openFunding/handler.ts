@@ -13,13 +13,9 @@ export async function handler(
   event: Schema["openFundingOp"]["functionHandler"]
 ): Promise<{ success: boolean; error?: string }> {
   const { workspaceId, receivableId } = event.arguments;
+  console.log("openFunding:", { workspaceId, receivableId });
 
   try {
-    const identity = await client.auth.getIdentityId();
-    if (!identity.data) {
-      return { success: false, error: "Not authenticated" };
-    }
-
     const receivableResult = await client.models.Receivable.get({ id: receivableId });
     if (!receivableResult.data) {
       return { success: false, error: "Receivable not found" };
@@ -37,9 +33,6 @@ export async function handler(
     return { success: false, error: "On-chain transaction required from frontend" };
   } catch (error) {
     console.error("openFunding error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
 }

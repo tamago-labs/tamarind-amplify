@@ -13,6 +13,7 @@ export async function handler(
   event: Schema["queryInvestmentPositionsOp"]["functionHandler"]
 ): Promise<{ success: boolean; positions?: any[]; error?: string }> {
   const { workspaceId, receivableId } = event.arguments;
+  console.log("queryInvestmentPositions:", { workspaceId, receivableId });
 
   try {
     const receivableResult = await client.models.Receivable.get({ id: receivableId });
@@ -20,8 +21,7 @@ export async function handler(
       return { success: false, error: "Receivable not found" };
     }
 
-    const receivable = receivableResult.data;
-    if (receivable.workspaceId !== workspaceId) {
+    if (receivableResult.data.workspaceId !== workspaceId) {
       return { success: false, error: "Access denied" };
     }
 
@@ -35,9 +35,6 @@ export async function handler(
     };
   } catch (error) {
     console.error("queryInvestmentPositions error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
 }
