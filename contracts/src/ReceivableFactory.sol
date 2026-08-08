@@ -9,16 +9,26 @@ import {ICleanverseValidator} from "./interfaces/ICleanverseValidator.sol";
 /// @notice Deploys and registers one ReceivableManager per Company receivable.
 contract ReceivableFactory is Ownable {
     address public immutable token;
-    ICleanverseValidator public immutable validator;
+    ICleanverseValidator public validator;
     address[] public managers;
     mapping(address => address[]) public managersByCompany;
 
     event ReceivableManagerCreated(address indexed manager, address indexed company, uint256 indexed index);
+    event ValidatorUpdated(address indexed oldValidator, address indexed newValidator);
 
     constructor(address tokenAddress, address validatorAddress, address owner_) Ownable(owner_) {
-        require(tokenAddress != address(0) && validatorAddress != address(0), "Zero dependency");
+        require(tokenAddress != address(0), "Zero token");
         token = tokenAddress;
+        if (validatorAddress != address(0)) {
+            validator = ICleanverseValidator(validatorAddress);
+        }
+    }
+
+    function setValidator(address validatorAddress) external onlyOwner {
+        require(validatorAddress != address(0), "Zero validator");
+        address old = address(validator);
         validator = ICleanverseValidator(validatorAddress);
+        emit ValidatorUpdated(old, validatorAddress);
     }
 
     function createReceivable(
@@ -27,6 +37,7 @@ contract ReceivableFactory is Ownable {
         uint256 dueAt,
         ICleanverseValidator.RuleV2 calldata rule
     ) external returns (address manager) {
+        require(address(validator) != address(0), "Validator not set");
         ReceivableManager created = new ReceivableManager(
             token, address(validator), msg.sender, fundingTarget, repaymentAmount, dueAt
         );

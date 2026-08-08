@@ -263,4 +263,38 @@ contract ReceivableManagerTest is Test {
         assertEq(newManager.proofCount(), 2);
         vm.stopPrank();
     }
+
+    function testSetValidator() public {
+        MockValidator newValidator = new MockValidator();
+        address newValidatorAddr = address(newValidator);
+
+        factory.setValidator(newValidatorAddr);
+
+        assertEq(address(factory.validator()), newValidatorAddr);
+    }
+
+    function testSetValidatorRevertsForNonOwner() public {
+        MockValidator newValidator = new MockValidator();
+
+        vm.prank(partnerA);
+        vm.expectRevert();
+        factory.setValidator(address(newValidator));
+    }
+
+    function testDeployWithZeroValidator() public {
+        ICleanverseValidator.RuleV2 memory rule = ICleanverseValidator.RuleV2(bytes2(0), bytes2(0), 1, 0, 0);
+
+        ReceivableFactory noValidatorFactory = new ReceivableFactory(address(token), address(0), address(this));
+        assertEq(address(noValidatorFactory.validator()), address(0));
+
+        vm.expectRevert("Validator not set");
+        noValidatorFactory.createReceivable(TARGET, REPAYMENT, block.timestamp + 90 days, rule);
+
+        MockValidator newValidator = new MockValidator();
+        noValidatorFactory.setValidator(address(newValidator));
+
+        vm.prank(company);
+        noValidatorFactory.createReceivable(TARGET, REPAYMENT, block.timestamp + 90 days, rule);
+        assertEq(noValidatorFactory.getReceivableCount(), 1);
+    }
 }
