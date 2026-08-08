@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Building2, User, Briefcase, ZoomIn, ZoomOut, ArrowLeft } from "lucide-react";
+import { Building2, User, Briefcase, Play, Route, ZoomIn, ZoomOut, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 interface ToolbarProps {
@@ -12,10 +12,15 @@ interface ToolbarProps {
   onZoomChange: (zoom: number) => void;
   onAddNode: (role: "company" | "recipient" | "deposit") => void;
   onNameChange: (name: string) => void;
+  onStartFlow: () => void;
+  onToggleOverlay: () => void;
   locked: boolean;
+  hasRoutes: boolean;
+  showOverlay: boolean;
+  activeRoutes: number;
 }
 
-export default function Toolbar({ workflowId, workspaceId, workflowName, zoom, onZoomChange, onAddNode, onNameChange, locked }: ToolbarProps) {
+export default function Toolbar({ workflowId, workspaceId, workflowName, zoom, onZoomChange, onAddNode, onNameChange, onStartFlow, onToggleOverlay, locked, hasRoutes, showOverlay, activeRoutes }: ToolbarProps) {
   const [editing, setEditing] = useState(false);
   const [nameValue, setNameValue] = useState(workflowName);
 
@@ -107,6 +112,30 @@ export default function Toolbar({ workflowId, workspaceId, workflowName, zoom, o
             <ZoomOut size={14} />
           </button>
         </div>
+        {!locked && hasRoutes && (
+          <>
+            <div className="h-5 w-px bg-gray-200" />
+            <button
+              onClick={onStartFlow}
+              className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700"
+            >
+              <Play size={13} />
+              Start
+            </button>
+          </>
+        )}
+        {locked && activeRoutes > 0 && (
+          <>
+            <div className="h-5 w-px bg-gray-200" />
+            <button
+              onClick={onToggleOverlay}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${showOverlay ? "bg-indigo text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+            >
+              <Route size={13} />
+              Routes ({activeRoutes})
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

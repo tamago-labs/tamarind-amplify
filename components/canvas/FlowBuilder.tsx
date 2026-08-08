@@ -10,6 +10,8 @@ import CanvasLines from "./CanvasLines";
 import Toolbar from "./Toolbar";
 import IdentityPopover from "./IdentityPopover";
 import DocumentDrawer from "./DocumentDrawer";
+import PreviewRoutesModal from "./PreviewRoutesModal";
+import FlowOverlay from "./FlowOverlay";
 import { type CanvasNode, type CanvasConnection, type NodeRole, VALID_CONNECTIONS, CARD_WIDTH, CARD_HEIGHTS } from "./types";
 
 const client = generateClient<Schema>();
@@ -31,13 +33,34 @@ export default function FlowBuilder({ workflowId, workspaceId, workflowName: ini
   const [popoverRole, setPopoverRole] = useState<NodeRole | null>(null);
   const [loading, setLoading] = useState(true);
   const [workflowName, setWorkflowName] = useState(initialName);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [workflowRuns, setWorkflowRuns] = useState<Array<{ id: string; connectionId: string; status: string }>>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [nodesResult, connectionsResult] = await Promise.all([
+    const [nodesResult, connectionsResult, runsResult] = await Promise.all([
       client.models.WorkflowNode.list({ filter: { workflowId: { eq: workflowId } } }),
       client.models.WorkflowConnection.list({ filter: { workflowId: { eq: workflowId } } }),
+      client.models.WorkflowRun.list({ filter: { workflowId: { eq: workflowId } } }),
     ]);
+
+    const runs = (runsResult.data || []).map((r) => ({
+      id: r.id,
+      connectionId: r.connectionId,
+      status: r.status || "draft",
+    }));
+    setWorkflowRuns(runs);
+    
+    const hasAnyRuns = runs.length > 0;
+    const hasActiveRuns = runs.some((r) => r.status === "processing" || r.status === "pendingApproval");
+    
+    if (hasAnyRuns) {
+      setLocked(true);
+      if (hasActiveRuns) {
+        setShowOverlay(true);
+      }
+    }
 
     const nodesWithIdentity = await Promise.all(
       (nodesResult.data || []).map(async (n) => {
@@ -281,6 +304,53 @@ export default function FlowBuilder({ workflowId, workspaceId, workflowName: ini
     [workflowId]
   );
 
+  const hasRoutes = connections.some((c) => c.fixedAmount && c.currency) && workflowRuns.length === 0;
+
+  const handleStartFlow = useCallback(async () => {
+    const routesWithAmount = connections.filter((c) => c.fixedAmount && c.currency);
+    
+    const newRuns = await Promise.all(
+      routesWithAmount.map(async (conn) => {
+        const fromNode = nodes.find((n) => n.id === conn.fromNodeId);
+        const toNode = nodes.find((n) => n.id === conn.toNodeId);
+        const symbol = conn.currency?.split("-")[0] || "";
+        const chain = conn.currency?.split("-")[1] || "base";
+        
+        const { data } = await client.models.WorkflowRun.create({
+          workspaceId,
+          workflowId,
+          connectionId: conn.id,
+          flowType: conn.flowType,
+          status: conn.flowType === "invoice" ? "pendingApproval" : "processing",
+          initiatedBy: "current-user",
+          sourceIdentityId: fromNode?.identityId,
+          targetIdentityId: toNode?.identityId,
+          sourceWalletAddress: fromNode?.walletAddress,
+          targetWalletAddress: toNode?.walletAddress,
+          amount: conn.fixedAmount,
+          currency: symbol,
+          chain,
+          templateId: conn.templateId,
+          templateVersion: conn.templateVersion,
+        });
+        
+        return data ? { id: data.id, connectionId: conn.id, status: data.status || "processing" } : null;
+      })
+    );
+
+    const validRuns = newRuns.filter((r): r is NonNullable<typeof r> => r !== null);
+    setWorkflowRuns(validRuns);
+    setLocked(true);
+    setShowPreview(false);
+    setShowOverlay(true);
+    
+    await client.models.Workflow.update({ 
+      id: workflowId, 
+      status: "published",
+      publishedAt: new Date().toISOString(),
+    });
+  }, [connections, nodes, workflowId, workspaceId]);
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -299,7 +369,12 @@ export default function FlowBuilder({ workflowId, workspaceId, workflowName: ini
         onZoomChange={setZoom}
         onAddNode={handleAddNode}
         onNameChange={handleNameChange}
+        onStartFlow={() => setShowPreview(true)}
+        onToggleOverlay={() => setShowOverlay(!showOverlay)}
         locked={locked}
+        hasRoutes={hasRoutes}
+        showOverlay={showOverlay}
+        activeRoutes={workflowRuns.length}
       />
       {connectFrom && (
         <div className="bg-green-50 px-4 py-2 text-center text-xs font-medium text-green-700">
@@ -355,6 +430,30 @@ export default function FlowBuilder({ workflowId, workspaceId, workflowName: ini
           />
         );
       })()}
+      {showPreview && (
+        <PreviewRoutesModal
+          routes={connections
+            .filter((c) => c.fixedAmount && c.currency)
+            .map((c) => ({
+              connection: c,
+              fromNode: nodes.find((n) => n.id === c.fromNodeId),
+              toNode: nodes.find((n) => n.id === c.toNodeId),
+            }))}
+          onStart={handleStartFlow}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
+      {showOverlay && (
+        <FlowOverlay
+          runs={workflowRuns}
+          connections={connections}
+          nodes={nodes}
+          onSign={(runId) => {
+            setWorkflowRuns((prev) => prev.map((r) => r.id === runId ? { ...r, status: "settled" } : r));
+          }}
+          onClose={() => setShowOverlay(false)}
+        />
+      )}
     </div>
   );
 }
