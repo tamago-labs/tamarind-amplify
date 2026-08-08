@@ -106,7 +106,7 @@ function renderPreviewHtml(html: string, companyName: string, fields: TemplateFi
   return preview;
 }
 
-export default function TemplateEditor({ template, onClose, onSave }: { template: TemplateDraft | null; onClose: () => void; onSave: (draft: TemplateDraft) => Promise<void> }) {
+export default function TemplateEditor({ template, onClose, onSave, error }: { template: TemplateDraft | null; onClose: () => void; onSave: (draft: TemplateDraft) => Promise<void>; error?: string }) {
   const [name, setName] = useState(template?.name || "");
   const [documentType, setDocumentType] = useState<DocumentType>(template?.documentType || "payment");
   const [fields, setFields] = useState<TemplateField[]>(template?.fields || fieldsByDocumentType.payment.slice(0, 6));
@@ -175,6 +175,12 @@ export default function TemplateEditor({ template, onClose, onSave }: { template
             <X size={18} />
           </button>
         </div>
+        
+        {error && (
+          <div className="mx-6 mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
         
         <div className="grid min-h-0 flex-1 md:grid-cols-2">
           <div className="overflow-y-auto border-b border-hair p-6 md:border-b-0 md:border-r">
