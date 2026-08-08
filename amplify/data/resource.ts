@@ -202,6 +202,7 @@ const schema = a.schema({
       dueDate: a.datetime().required(),
       interestRate: a.float(),
       paymentProofs: a.hasMany("ReceivableProof", "receivableId"),
+      positions: a.hasMany("InvestmentPosition", "receivableId"),
       rule: a.json(),
       status: a.enum(["created", "funding", "funded", "repaid", "defaulted", "closed"]),
       totalFunded: a.string(),
