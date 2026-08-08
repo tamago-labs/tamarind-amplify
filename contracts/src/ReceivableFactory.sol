@@ -8,16 +8,16 @@ import {ICleanverseValidator} from "./interfaces/ICleanverseValidator.sol";
 /// @title ReceivableFactory
 /// @notice Deploys and registers one ReceivableManager per Company receivable.
 contract ReceivableFactory is Ownable {
-    address public immutable ausdc;
+    address public immutable token;
     ICleanverseValidator public immutable validator;
     address[] public managers;
     mapping(address => address[]) public managersByCompany;
 
     event ReceivableManagerCreated(address indexed manager, address indexed company, uint256 indexed index);
 
-    constructor(address ausdcAddress, address validatorAddress, address owner_) Ownable(owner_) {
-        require(ausdcAddress != address(0) && validatorAddress != address(0), "Zero dependency");
-        ausdc = ausdcAddress;
+    constructor(address tokenAddress, address validatorAddress, address owner_) Ownable(owner_) {
+        require(tokenAddress != address(0) && validatorAddress != address(0), "Zero dependency");
+        token = tokenAddress;
         validator = ICleanverseValidator(validatorAddress);
     }
 
@@ -28,12 +28,12 @@ contract ReceivableFactory is Ownable {
         ICleanverseValidator.RuleV2 calldata rule
     ) external returns (address manager) {
         ReceivableManager created = new ReceivableManager(
-            ausdc, address(validator), msg.sender, fundingTarget, repaymentAmount, dueAt
+            token, address(validator), msg.sender, fundingTarget, repaymentAmount, dueAt
         );
         manager = address(created);
         // Factory must hold Cleanverse REGISTER_ROLE before this operation is used.
         validator.registerV2(manager, rule);
-        validator.registerApass(manager, ausdc);
+        validator.registerApass(manager, token);
         managers.push(manager);
         managersByCompany[msg.sender].push(manager);
         emit ReceivableManagerCreated(manager, msg.sender, managers.length - 1);
@@ -45,5 +45,26 @@ contract ReceivableFactory is Ownable {
 
     function getManagersByCompany(address company) external view returns (address[] memory) {
         return managersByCompany[company];
+    }
+
+    function getReceivableCount() external view returns (uint256) {
+        return managers.length;
+    }
+
+    function getReceivableInfo(address managerAddress)
+        external
+        view
+        returns (
+            address company,
+            uint256 fundingTarget,
+            uint256 repaymentAmount,
+            uint256 dueAt,
+            uint256 totalFunded,
+            uint256 proofCount,
+            ReceivableManager.Status status
+        )
+    {
+        ReceivableManager manager = ReceivableManager(managerAddress);
+        return manager.getReceivableInfo();
     }
 }

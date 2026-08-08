@@ -20,13 +20,7 @@ contract ReceivableManager is Ownable, ReentrancyGuard {
         Funded,
         Repaid,
         Defaulted,
-        Closed,
-        Cancelled
-    }
-
-    struct SettlementProof {
-        bytes32 settlementId;
-        bytes32 merkleRoot;
+        Closed
     }
 
     struct InvestmentLot {
@@ -35,7 +29,7 @@ contract ReceivableManager is Ownable, ReentrancyGuard {
         bool redeemed;
     }
 
-    IERC20 public immutable ausdc;
+    IERC20 public immutable token;
     ICleanverseValidator public immutable validator;
     InvestmentPositionNFT public immutable positionNFT;
     uint256 public immutable fundingTarget;
@@ -48,30 +42,29 @@ contract ReceivableManager is Ownable, ReentrancyGuard {
     uint256 public proofCount;
     Status public status;
 
-    mapping(bytes32 => bool) public settlementExists;
-    mapping(bytes32 => bool) public rootExists;
+    mapping(bytes32 => bool) public proofExists;
+    mapping(bytes32 => bytes32) public proofToRoot;
     mapping(uint256 => InvestmentLot) public investmentLots;
-    mapping(bytes32 => bytes32) public settlementToRoot;
 
-    event SettlementProofAdded(bytes32 indexed settlementId, bytes32 indexed merkleRoot);
+    event PaymentProofAdded(bytes32 indexed proofId, bytes32 indexed merkleRoot);
     event FundingOpened();
     event Invested(uint256 indexed positionId, address indexed partner, uint256 amount, uint256 fundedAt);
     event Repaid(uint256 amount, uint256 interestAsOf);
-    event Redeemed(uint256 indexed positionId, address indexed investor, uint256 amount);
+    event Redeemed(uint256 indexed positionId, address indexed investor, uint256 payout);
     event StatusUpdated(Status status);
 
     constructor(
-        address ausdcAddress,
+        address tokenAddress,
         address validatorAddress,
         address company,
         uint256 fundingTarget_,
         uint256 repaymentAmount_,
         uint256 dueAt_
     ) Ownable(company) {
-        require(ausdcAddress != address(0) && validatorAddress != address(0), "Zero dependency");
+        require(tokenAddress != address(0) && validatorAddress != address(0), "Zero dependency");
         require(fundingTarget_ > 0 && repaymentAmount_ >= fundingTarget_, "Invalid terms");
         require(dueAt_ > block.timestamp, "Invalid due date");
-        ausdc = IERC20(ausdcAddress);
+        token = IERC20(tokenAddress);
         validator = ICleanverseValidator(validatorAddress);
         positionNFT = new InvestmentPositionNFT(address(this));
         fundingTarget = fundingTarget_;
@@ -80,16 +73,14 @@ contract ReceivableManager is Ownable, ReentrancyGuard {
         status = Status.Created;
     }
 
-    function addSettlementProof(bytes32 settlementId, bytes32 merkleRoot) external onlyOwner {
+    function addPaymentProof(bytes32 proofId, bytes32 merkleRoot) external onlyOwner {
         require(status == Status.Created, "Proofs closed");
-        require(settlementId != bytes32(0) && merkleRoot != bytes32(0), "Zero proof value");
-        require(!settlementExists[settlementId], "Settlement already used");
-        require(!rootExists[merkleRoot], "Root already used");
-        settlementExists[settlementId] = true;
-        rootExists[merkleRoot] = true;
-        settlementToRoot[settlementId] = merkleRoot;
+        require(proofId != bytes32(0) && merkleRoot != bytes32(0), "Zero proof value");
+        require(!proofExists[proofId], "Proof already used");
+        proofExists[proofId] = true;
+        proofToRoot[proofId] = merkleRoot;
         proofCount++;
-        emit SettlementProofAdded(settlementId, merkleRoot);
+        emit PaymentProofAdded(proofId, merkleRoot);
     }
 
     function openFunding() external onlyOwner {
@@ -104,7 +95,7 @@ contract ReceivableManager is Ownable, ReentrancyGuard {
         require(validator.complianceVerify(address(this), msg.sender), "Partner not eligible");
 
         uint256 fundedAt = block.timestamp;
-        ausdc.safeTransferFrom(msg.sender, owner(), amount);
+        token.safeTransferFrom(msg.sender, owner(), amount);
         positionId = positionNFT.mintPosition(msg.sender, amount, fundedAt);
         investmentLots[positionId] = InvestmentLot(amount, fundedAt, false);
         totalFunded += amount;
@@ -118,7 +109,7 @@ contract ReceivableManager is Ownable, ReentrancyGuard {
         uint256 repaymentTime = block.timestamp < dueAt ? block.timestamp : dueAt;
         totalInvestmentWeight = (totalFunded * repaymentTime) - weightedFundedAt;
         require(totalInvestmentWeight > 0, "Zero investment duration");
-        ausdc.safeTransferFrom(msg.sender, address(this), repaymentAmount);
+        token.safeTransferFrom(msg.sender, address(this), repaymentAmount);
         interestAsOf = repaymentTime;
         status = Status.Repaid;
         emit Repaid(repaymentAmount, repaymentTime);
@@ -135,7 +126,7 @@ contract ReceivableManager is Ownable, ReentrancyGuard {
         payout = lot.principal + interest;
         lot.redeemed = true;
         positionNFT.burn(positionId);
-        ausdc.safeTransfer(msg.sender, payout);
+        token.safeTransfer(msg.sender, payout);
         emit Redeemed(positionId, msg.sender, payout);
     }
 
@@ -149,5 +140,57 @@ contract ReceivableManager is Ownable, ReentrancyGuard {
         require(status == Status.Repaid, "Not repaid");
         status = Status.Closed;
         emit StatusUpdated(status);
+    }
+
+    function getReceivableInfo()
+        external
+        view
+        returns (
+            address company,
+            uint256 fundingTarget_,
+            uint256 repaymentAmount_,
+            uint256 dueAt_,
+            uint256 totalFunded_,
+            uint256 proofCount_,
+            Status status_
+        )
+    {
+        return (
+            owner(),
+            fundingTarget,
+            repaymentAmount,
+            dueAt,
+            totalFunded,
+            proofCount,
+            status
+        );
+    }
+
+    function getPaymentProofs() external view returns (bytes32[] memory proofIds, bytes32[] memory merkleRoots) {
+        proofIds = new bytes32[](proofCount);
+        merkleRoots = new bytes32[](proofCount);
+        uint256 index;
+        for (uint256 i; i < proofCount; i++) {
+            bytes32 proofId = keccak256(abi.encodePacked("proof", i));
+            if (proofExists[proofId]) {
+                proofIds[index] = proofId;
+                merkleRoots[index] = proofToRoot[proofId];
+                index++;
+            }
+        }
+    }
+
+    function getInvestmentInfo(uint256 positionId)
+        external
+        view
+        returns (
+            uint256 principal,
+            uint256 fundedAt,
+            bool redeemed,
+            address investor
+        )
+    {
+        InvestmentLot storage lot = investmentLots[positionId];
+        return (lot.principal, lot.fundedAt, lot.redeemed, positionNFT.ownerOf(positionId));
     }
 }

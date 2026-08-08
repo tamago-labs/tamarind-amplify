@@ -7,7 +7,7 @@ import "../src/ReceivableFactory.sol";
 import "../src/ReceivableManager.sol";
 import "../src/interfaces/ICleanverseValidator.sol";
 
-contract MockAUSDC {
+contract MockToken {
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
@@ -63,21 +63,21 @@ contract MockValidator is ICleanverseValidator {
 }
 
 contract ReceivableManagerTest is Test {
-    uint256 constant TARGET = 10_000e6;
-    uint256 constant REPAYMENT = 11_000e6;
+    uint256 constant TARGET = 10_000e18;
+    uint256 constant REPAYMENT = 11_000e18;
     address company = address(0xC0FFEE);
     address partnerA = address(0xA11CE);
     address partnerB = address(0xB0B);
 
-    MockAUSDC ausdc;
+    MockToken token;
     MockValidator validator;
     ReceivableFactory factory;
     ReceivableManager manager;
 
     function setUp() public {
-        ausdc = new MockAUSDC();
+        token = new MockToken();
         validator = new MockValidator();
-        factory = new ReceivableFactory(address(ausdc), address(validator), address(this));
+        factory = new ReceivableFactory(address(token), address(validator), address(this));
         ICleanverseValidator.RuleV2 memory rule = ICleanverseValidator.RuleV2(bytes2(0), bytes2(0), 1, 0, 0);
 
         vm.prank(company);
@@ -88,29 +88,29 @@ contract ReceivableManagerTest is Test {
         assertEq(factory.managersByCompany(company, 0), managerAddress);
 
         vm.startPrank(company);
-        manager.addSettlementProof(keccak256("settlement-1"), keccak256("invoice-payment-proof-1"));
-        manager.addSettlementProof(keccak256("settlement-2"), keccak256("invoice-payment-proof-2"));
+        manager.addPaymentProof(keccak256("proof-1"), keccak256("invoice-payment-proof-1"));
+        manager.addPaymentProof(keccak256("proof-2"), keccak256("invoice-payment-proof-2"));
         manager.openFunding();
         vm.stopPrank();
 
-        ausdc.mint(partnerA, 10_000e6);
-        ausdc.mint(partnerB, 7_500e6);
+        token.mint(partnerA, 10_000e18);
+        token.mint(partnerB, 7_500e18);
         vm.prank(partnerA);
-        ausdc.approve(address(manager), type(uint256).max);
+        token.approve(address(manager), type(uint256).max);
         vm.prank(partnerB);
-        ausdc.approve(address(manager), type(uint256).max);
+        token.approve(address(manager), type(uint256).max);
     }
 
     function testFactoryRegistersManagerAndSupportsMultiplePartners() public {
         vm.prank(partnerA);
-        uint256 positionA = manager.invest(2_500e6);
+        uint256 positionA = manager.invest(2_500e18);
         vm.warp(block.timestamp + 10 days);
         vm.prank(partnerB);
-        uint256 positionB = manager.invest(7_500e6);
+        uint256 positionB = manager.invest(7_500e18);
 
         assertEq(positionA, 0);
         assertEq(positionB, 1);
-        assertEq(ausdc.balanceOf(company), TARGET);
+        assertEq(token.balanceOf(company), TARGET);
         assertEq(manager.proofCount(), 2);
         assertEq(IERC721(address(manager.positionNFT())).ownerOf(positionA), partnerA);
         assertEq(IERC721(address(manager.positionNFT())).ownerOf(positionB), partnerB);
@@ -119,10 +119,10 @@ contract ReceivableManagerTest is Test {
 
     function testRepeatedInvestmentsCreateSeparateLots() public {
         vm.prank(partnerA);
-        uint256 firstPosition = manager.invest(2_500e6);
+        uint256 firstPosition = manager.invest(2_500e18);
         vm.warp(block.timestamp + 10 days);
         vm.prank(partnerA);
-        uint256 secondPosition = manager.invest(7_500e6);
+        uint256 secondPosition = manager.invest(7_500e18);
 
         assertEq(firstPosition, 0);
         assertEq(secondPosition, 1);
@@ -133,49 +133,134 @@ contract ReceivableManagerTest is Test {
     function testTimeWeightedProrataRepayment() public {
         uint256 firstInvestmentTime = block.timestamp;
         vm.prank(partnerA);
-        uint256 positionA = manager.invest(2_500e6);
+        uint256 positionA = manager.invest(2_500e18);
         vm.warp(firstInvestmentTime + 10 days);
         uint256 secondInvestmentTime = block.timestamp;
         vm.prank(partnerB);
-        uint256 positionB = manager.invest(7_500e6);
+        uint256 positionB = manager.invest(7_500e18);
         vm.warp(secondInvestmentTime + 10 days);
 
-        ausdc.mint(company, REPAYMENT);
+        token.mint(company, REPAYMENT);
         vm.prank(company);
-        ausdc.approve(address(manager), REPAYMENT);
+        token.approve(address(manager), REPAYMENT);
         vm.prank(company);
         manager.repay();
 
-        uint256 totalWeight = (2_500e6 * 20 days) + (7_500e6 * 10 days);
-        uint256 expectedA = 2_500e6 + ((1_000e6 * (2_500e6 * 20 days)) / totalWeight);
-        uint256 expectedB = 7_500e6 + ((1_000e6 * (7_500e6 * 10 days)) / totalWeight);
-        uint256 partnerABefore = ausdc.balanceOf(partnerA);
-        uint256 partnerBBefore = ausdc.balanceOf(partnerB);
+        uint256 totalWeight = (2_500e18 * 20 days) + (7_500e18 * 10 days);
+        uint256 expectedA = 2_500e18 + ((1_000e18 * (2_500e18 * 20 days)) / totalWeight);
+        uint256 expectedB = 7_500e18 + ((1_000e18 * (7_500e18 * 10 days)) / totalWeight);
+        uint256 partnerABefore = token.balanceOf(partnerA);
+        uint256 partnerBBefore = token.balanceOf(partnerB);
 
         vm.prank(partnerA);
         manager.redeem(positionA);
         vm.prank(partnerB);
         manager.redeem(positionB);
 
-        assertEq(ausdc.balanceOf(partnerA) - partnerABefore, expectedA);
-        assertEq(ausdc.balanceOf(partnerB) - partnerBBefore, expectedB);
+        assertEq(token.balanceOf(partnerA) - partnerABefore, expectedA);
+        assertEq(token.balanceOf(partnerB) - partnerBBefore, expectedB);
     }
 
     function testValidatorCanRejectPartner() public {
         validator.setEligible(false);
         vm.prank(partnerA);
         vm.expectRevert("Partner not eligible");
-        manager.invest(2_500e6);
+        manager.invest(2_500e18);
     }
 
-    function testCannotReuseSettlementId() public {
+    function testCannotReuseProofId() public {
         ICleanverseValidator.RuleV2 memory rule = ICleanverseValidator.RuleV2(bytes2(0), bytes2(0), 1, 0, 0);
         vm.prank(company);
         address secondManager = factory.createReceivable(TARGET, REPAYMENT, block.timestamp + 90 days, rule);
         vm.startPrank(company);
-        ReceivableManager(secondManager).addSettlementProof(keccak256("same-settlement"), keccak256("proof-one"));
-        vm.expectRevert("Settlement already used");
-        ReceivableManager(secondManager).addSettlementProof(keccak256("same-settlement"), keccak256("proof-two"));
+        ReceivableManager(secondManager).addPaymentProof(keccak256("same-proof"), keccak256("proof-one"));
+        vm.expectRevert("Proof already used");
+        ReceivableManager(secondManager).addPaymentProof(keccak256("same-proof"), keccak256("proof-two"));
+        vm.stopPrank();
+    }
+
+    function testGetReceivableInfo() public {
+        (
+            address companyAddr,
+            uint256 fundingTarget_,
+            uint256 repaymentAmount_,
+            uint256 dueAt_,
+            uint256 totalFunded_,
+            uint256 proofCount_,
+            ReceivableManager.Status status_
+        ) = manager.getReceivableInfo();
+
+        assertEq(companyAddr, company);
+        assertEq(fundingTarget_, TARGET);
+        assertEq(repaymentAmount_, REPAYMENT);
+        assertEq(totalFunded_, 0);
+        assertEq(proofCount_, 2);
+        assertEq(uint8(status_), uint8(ReceivableManager.Status.Funding));
+    }
+
+    function testGetPaymentProofs() public {
+        (bytes32[] memory proofIds, bytes32[] memory merkleRoots) = manager.getPaymentProofs();
+        assertEq(proofIds.length, 2);
+        assertEq(merkleRoots.length, 2);
+    }
+
+    function testGetInvestmentInfo() public {
+        vm.prank(partnerA);
+        uint256 positionId = manager.invest(2_500e18);
+
+        (uint256 principal, uint256 fundedAt, bool redeemed, address investor) = manager.getInvestmentInfo(positionId);
+        assertEq(principal, 2_500e18);
+        assertEq(fundedAt, block.timestamp);
+        assertFalse(redeemed);
+        assertEq(investor, partnerA);
+    }
+
+    function testDefaultScenario() public {
+        vm.prank(partnerA);
+        manager.invest(2_500e18);
+        vm.warp(block.timestamp + 10 days);
+        vm.prank(partnerB);
+        manager.invest(7_500e18);
+
+        vm.prank(company);
+        manager.markDefaulted();
+
+        (, , , , , , ReceivableManager.Status status_) = manager.getReceivableInfo();
+        assertEq(uint8(status_), uint8(ReceivableManager.Status.Defaulted));
+    }
+
+    function testCloseAfterRepay() public {
+        vm.prank(partnerA);
+        manager.invest(10_000e18);
+        vm.warp(block.timestamp + 30 days);
+
+        token.mint(company, REPAYMENT);
+        vm.prank(company);
+        token.approve(address(manager), REPAYMENT);
+        vm.prank(company);
+        manager.repay();
+
+        vm.prank(company);
+        manager.close();
+
+        (, , , , , , ReceivableManager.Status status_) = manager.getReceivableInfo();
+        assertEq(uint8(status_), uint8(ReceivableManager.Status.Closed));
+    }
+
+    function testProofCountIncrements() public {
+        ICleanverseValidator.RuleV2 memory rule = ICleanverseValidator.RuleV2(bytes2(0), bytes2(0), 1, 0, 0);
+        vm.prank(company);
+        address managerAddr = factory.createReceivable(TARGET, REPAYMENT, block.timestamp + 90 days, rule);
+        ReceivableManager newManager = ReceivableManager(managerAddr);
+
+        assertEq(newManager.proofCount(), 0);
+
+        vm.startPrank(company);
+        newManager.addPaymentProof(keccak256("proof-a"), keccak256("root-a"));
+        assertEq(newManager.proofCount(), 1);
+
+        newManager.addPaymentProof(keccak256("proof-b"), keccak256("root-b"));
+        assertEq(newManager.proofCount(), 2);
         vm.stopPrank();
     }
 }
