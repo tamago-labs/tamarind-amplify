@@ -8,19 +8,19 @@ contract DeployReceivableFactory is Script {
     function run() external returns (ReceivableFactory factory) {
         uint256 deployerPrivateKey = vm.parseUint(vm.envString("PRIVATE_KEY"));
         address deployer = vm.addr(deployerPrivateKey);
-        address ausdc = vm.envAddress("AUSDC_ADDRESS");
-        address validator = vm.envAddress("CLEANVERSE_VALIDATOR_ADDRESS");
+        address token = vm.envAddress("TOKEN_ADDRESS");          // aJPYC on Base Sepolia
+        address validator = vm.envAddress("CVI_VALIDATOR_ADDRESS"); // Cleanverse CVI Compliance Validator
 
-        require(ausdc != address(0), "AUSDC_ADDRESS is zero");
-        require(validator != address(0), "CLEANVERSE_VALIDATOR_ADDRESS is zero");
+        require(token != address(0), "TOKEN_ADDRESS is zero");
+        require(validator != address(0), "CVI_VALIDATOR_ADDRESS is zero");
 
         vm.startBroadcast(deployerPrivateKey);
-        factory = new ReceivableFactory(ausdc, validator, deployer);
+        factory = new ReceivableFactory(token, validator, deployer);
         vm.stopBroadcast();
 
         console.log("ReceivableFactory:", address(factory));
-        console.log("aUSDC:", ausdc);
-        console.log("Validator:", validator);
+        console.log("Token (aJPYC):", token);
+        console.log("CVI Validator:", validator);
         console.log("Factory owner:", factory.owner());
         console.log("Chain ID:", block.chainid);
     }
