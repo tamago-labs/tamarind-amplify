@@ -5,6 +5,12 @@ import { queryDepositAddress } from "../functions/queryDepositAddress/resource.j
 import { addWhitelist } from "../functions/addWhitelist/resource.js";
 import { removeWhitelist } from "../functions/removeWhitelist/resource.js";
 import { queryTokenRules } from "../functions/queryTokenRules/resource.js";
+import { createReceivable } from "../functions/createReceivable/resource.js";
+import { openFunding } from "../functions/openFunding/resource.js";
+import { addPaymentProof } from "../functions/addPaymentProof/resource.js";
+import { queryReceivable } from "../functions/queryReceivable/resource.js";
+import { queryInvestmentPositions } from "../functions/queryInvestmentPositions/resource.js";
+import { queryAvailableReceivables } from "../functions/queryAvailableReceivables/resource.js";
 
 const apassStatus = a.customType({
   workspaceIdentityId: a.id(),
@@ -185,6 +191,51 @@ const schema = a.schema({
       note: a.string(),
       reviewedAt: a.datetime(),
       workflowRun: a.belongsTo("WorkflowRun", "workflowRunId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  Receivable: a
+    .model({
+      workspaceId: a.id().required(),
+      workflowRunId: a.id(),
+      companyId: a.id().required(),
+      chain: a.string().required(),
+      managerAddress: a.string().required(),
+      nftAddress: a.string(),
+      factoryAddress: a.string().required(),
+      fundingTarget: a.string().required(),
+      repaymentAmount: a.string().required(),
+      dueDate: a.datetime().required(),
+      interestRate: a.float(),
+      paymentProofs: a.hasMany("ReceivableProof", "receivableId"),
+      rule: a.json(),
+      status: a.enum(["created", "funding", "funded", "repaid", "defaulted", "closed"]),
+      totalFunded: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  ReceivableProof: a
+    .model({
+      receivableId: a.id().required(),
+      proofId: a.string().required(),
+      merkleRoot: a.string().required(),
+      description: a.string(),
+      attachedAt: a.datetime(),
+      receivable: a.belongsTo("Receivable", "receivableId"),
+    })
+    .authorization((allow) => [allow.authenticated()]),
+
+  InvestmentPosition: a
+    .model({
+      receivableId: a.id().required(),
+      investorAddress: a.string().required(),
+      positionId: a.integer().required(),
+      principal: a.string().required(),
+      fundedAt: a.datetime(),
+      redeemed: a.boolean(),
+      receivable: a.belongsTo("Receivable", "receivableId"),
     })
     .authorization((allow) => [allow.authenticated()]),
 
@@ -385,7 +436,75 @@ const schema = a.schema({
     .returns(a.customType({ success: a.boolean().required(), rules: a.string(), error: a.string() }))
     .handler(a.handler.function(queryTokenRules))
     .authorization((allow) => [allow.authenticated()]),
-}).authorization((allow) => [allow.resource(cleanverseIdentity), allow.resource(cleanverseFaucet), allow.resource(queryDepositAddress), allow.resource(addWhitelist), allow.resource(removeWhitelist), allow.resource(queryTokenRules)]);
+
+  createReceivableOp: a
+    .mutation()
+    .arguments({
+      workspaceId: a.id().required(),
+      workflowRunId: a.id(),
+      fundingTarget: a.string().required(),
+      repaymentAmount: a.string().required(),
+      dueDate: a.string().required(),
+      interestRate: a.float(),
+      rule: a.json(),
+      paymentProofs: a.json().array(),
+    })
+    .returns(a.customType({ success: a.boolean().required(), managerAddress: a.string(), nftAddress: a.string(), error: a.string() }))
+    .handler(a.handler.function(createReceivable))
+    .authorization((allow) => [allow.authenticated()]),
+
+  openFundingOp: a
+    .mutation()
+    .arguments({
+      workspaceId: a.id().required(),
+      receivableId: a.id().required(),
+    })
+    .returns(a.customType({ success: a.boolean().required(), error: a.string() }))
+    .handler(a.handler.function(openFunding))
+    .authorization((allow) => [allow.authenticated()]),
+
+  addPaymentProofOp: a
+    .mutation()
+    .arguments({
+      workspaceId: a.id().required(),
+      receivableId: a.id().required(),
+      proofId: a.string().required(),
+      merkleRoot: a.string().required(),
+      description: a.string(),
+    })
+    .returns(a.customType({ success: a.boolean().required(), error: a.string() }))
+    .handler(a.handler.function(addPaymentProof))
+    .authorization((allow) => [allow.authenticated()]),
+
+  queryReceivableOp: a
+    .query()
+    .arguments({
+      workspaceId: a.id().required(),
+      receivableId: a.id().required(),
+    })
+    .returns(a.customType({ success: a.boolean().required(), receivable: a.json(), error: a.string() }))
+    .handler(a.handler.function(queryReceivable))
+    .authorization((allow) => [allow.authenticated()]),
+
+  queryInvestmentPositionsOp: a
+    .query()
+    .arguments({
+      workspaceId: a.id().required(),
+      receivableId: a.id().required(),
+    })
+    .returns(a.customType({ success: a.boolean().required(), positions: a.json(), error: a.string() }))
+    .handler(a.handler.function(queryInvestmentPositions))
+    .authorization((allow) => [allow.authenticated()]),
+
+  queryAvailableReceivablesOp: a
+    .query()
+    .arguments({
+      workspaceId: a.id().required(),
+    })
+    .returns(a.customType({ success: a.boolean().required(), receivables: a.json(), error: a.string() }))
+    .handler(a.handler.function(queryAvailableReceivables))
+    .authorization((allow) => [allow.authenticated()]),
+}).authorization((allow) => [allow.resource(cleanverseIdentity), allow.resource(cleanverseFaucet), allow.resource(queryDepositAddress), allow.resource(addWhitelist), allow.resource(removeWhitelist), allow.resource(queryTokenRules), allow.resource(createReceivable), allow.resource(openFunding), allow.resource(addPaymentProof), allow.resource(queryReceivable), allow.resource(queryInvestmentPositions), allow.resource(queryAvailableReceivables)]);
 
 export type Schema = ClientSchema<typeof schema>;
 
